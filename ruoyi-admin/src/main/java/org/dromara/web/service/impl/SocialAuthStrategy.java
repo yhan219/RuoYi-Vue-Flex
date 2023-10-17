@@ -7,7 +7,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.zhyd.oauth.model.AuthResponse;
@@ -35,6 +35,8 @@ import org.dromara.web.domain.vo.LoginVo;
 import org.dromara.web.service.IAuthStrategy;
 import org.dromara.web.service.SysLoginService;
 import org.springframework.stereotype.Service;
+
+import static org.dromara.system.domain.table.SysUserTableDef.SYS_USER;
 
 /**
  * 第三方授权策略
@@ -118,10 +120,11 @@ public class SocialAuthStrategy implements IAuthStrategy {
     }
 
     private SysUserVo loadUser(String tenantId, Long userId) {
-        SysUser user = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-            .select(SysUser::getUserName, SysUser::getStatus)
-            .eq(TenantHelper.isEnable(), SysUser::getTenantId, tenantId)
-            .eq(SysUser::getUserId, userId));
+        SysUser user = userMapper.selectOneByQuery(
+            QueryWrapper.create().from(SYS_USER)
+                .select(SYS_USER.USER_NAME, SYS_USER.STATUS)
+                .where(SYS_USER.TENANT_ID.eq(tenantId, TenantHelper.isEnable()))
+                .and(SYS_USER.USER_ID.eq(userId)));
         if (ObjectUtil.isNull(user)) {
             log.info("登录用户：{} 不存在.", "");
             throw new UserException("user.not.exists", "");

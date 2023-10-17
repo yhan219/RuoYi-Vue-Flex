@@ -1,3 +1,49 @@
+## 简介
+ruoyi-vue-flex是基于ruoyi-vue-plus的一个快速开发框架。将ruoyi-vue-plus中使用的mybatis-plus替换为mybatis-flex,并根据两个ORM框架使用的不同修改了部分逻辑。
+
+ruoyi-vue-flex与ruoyi-vue-plus功能完全相同。
+
+ruoyi-vue-flex将定期同步ruoyi-vue-plus，非冲突功能每天升级，冲突功能最迟不超过一周完成升级。
+
+## 与ruoyi-vue-plus的技术差异
+### 数据权限用法差异
+数据权限注解，修改为类，原写法：
+```java
+    @DataPermission({
+        @DataColumn(key = "deptName", value = "d.dept_id"),
+        @DataColumn(key = "userName", value = "r.create_by")
+    })
+    Page<SysRoleVo> selectPageRoleList(@Param("page") Page<SysRole> page, @Param(Constants.WRAPPER) Wrapper<SysRole> queryWrapper);
+```
+现写法：
+```java
+    default Page<SysRoleVo> selectPageRoleList(@Param("pageQuery") PageQuery pageQuery, QueryWrapper queryWrapper){
+        return paginateAs(pageQuery, queryWrapper, SysRoleVo.class, DataPermission.of(
+                DataColumn.of("deptName", "d.dept_id"),
+                DataColumn.of("userName", "r.create_by")
+            )
+        );
+    }
+```
+> 注：尝试写过拦截器以达到用法完全相同的目的，可惜拦截器功能和mybatis flex的插件不兼容，使用了数据权限插件，则无法使用mybatis flex的多租户插件等。如果你有更好的方法，欢迎pr
+
+### 忽略租户写法差异
+- 配置中的差异：
+  原写法： 在yml中配置忽略的表，mybatis-flex不支持,但mybatis-flex会默认忽略没有多租户字段的表
+- 代码中的差异：
+  原写法:在mapper中配置注解：
+```java
+    @InterceptorIgnore(tenantLine = "true")
+    SysUserVo selectTenantUserByUserName(@Param("userName") String userName, @Param("tenantId") String tenantId);
+```
+  现写法：
+```java
+// mapper中删除InterceptorIgnore注解，在service中手动忽略
+TenantHelper.ignore(() -> baseMapper.selectTenantUserByUserName(userName,tenantId));
+```
+
+
+## 以下为原ruoyi-vue-plus简介
 <img src="https://foruda.gitee.com/images/1679673773341074847/178e8451_1766278.png" width="50%" height="50%">
 <div style="height: 10px; clear: both;"></div>
 
@@ -40,10 +86,10 @@
 | 缓存数据库       | 支持 Redis 5-7 支持大部分新功能特性 如 分布式限流、分布式队列                                                                             | Redis 简单 get set 支持                                                                |
 | Redis客户端    | 采用 Redisson Redis官方推荐 基于Netty的客户端工具<br/>支持Redis 90%以上的命令 底层优化规避很多不正确的用法 例如: keys被转换为scan<br/>支持单机、哨兵、单主集群、多主集群等模式 | Lettuce + RedisTemplate 支持模式少 工具使用繁琐<br/>连接池采用 common-pool Bug多经常性出问题              |
 | 缓存注解        | 采用 Spring-Cache 注解 对其扩展了实现支持了更多功能<br/>例如 过期时间 最大空闲时间 组最大长度等 只需一个注解即可完成数据自动缓存                                      | 需手动编写Redis代码逻辑                                                                     |
-| ORM框架       | 采用 Mybatis-Plus 基于对象几乎不用写SQL全java操作 功能强大插件众多<br/>例如多租户插件 分页插件 乐观锁插件等等                                             | 采用 Mybatis 基于XML需要手写SQL                                                            |
+| ORM框架       | 采用 Mybatis-Flex 基于对象几乎不用写SQL全java操作 功能强大插件众多<br/>例如多租户插件 分页插件 乐观锁插件等等                                             | 采用 Mybatis 基于XML需要手写SQL                                                            |
 | SQL监控       | 采用 p6spy 可输出完整SQL与执行时间监控                                                                                          | log输出 需手动拼接sql与参数无法快速查看调试问题                                                        |
-| 数据分页        | 采用 Mybatis-Plus 分页插件<br/>框架对其进行了扩展 对象化分页对象 支持多种方式传参 支持前端多排序 复杂排序                                                  | 采用 PageHelper 仅支持单查询分页 参数只能从param传 只能单排序 功能扩展性差 体验不好                               |
-| 数据权限        | 采用 Mybatis-Plus 插件 自行分析拼接SQL 无感式过滤<br/>只需为Mapper设置好注解条件 支持多种自定义 不限于部门角色                                           | 采用 注解+aop 实现 基于部门角色 生成的sql兼容性差 不支持其他业务扩展<br/>生成sql后需手动拼接到具体业务sql上 对于多个Mapper查询不起作用 |
+| 数据分页        | 采用 Mybatis-Flex 分页插件<br/>框架对其进行了扩展 对象化分页对象 支持多种方式传参 支持前端多排序 复杂排序                                                  | 采用 PageHelper 仅支持单查询分页 参数只能从param传 只能单排序 功能扩展性差 体验不好                               |
+| 数据权限        | 采用 Mybatis-Flex 插件 自行分析拼接SQL 无感式过滤<br/>只需为Mapper设置好注解条件 支持多种自定义 不限于部门角色                                           | 采用 注解+aop 实现 基于部门角色 生成的sql兼容性差 不支持其他业务扩展<br/>生成sql后需手动拼接到具体业务sql上 对于多个Mapper查询不起作用 |
 | 数据脱敏        | 采用 注解 + jackson 序列化期间脱敏 支持不同模块不同的脱敏条件<br/>支持多种策略 如身份证、手机号、地址、邮箱、银行卡等 可自行扩展                                        | 无                                                                                  |
 | 数据加解密       | 采用 注解 + mybatis 拦截器 对存取数据期间自动加解密<br/>支持多种策略 如BASE64、AES、RSA、SM2、SM4等                                              | 无                                                                                  |
 | 接口传输加密      | 采用 动态 AES + RSA 加密请求 body 每一次请求秘钥都不同大幅度降低可破解性                                                                     | 无                                                                                  |

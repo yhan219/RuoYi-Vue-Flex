@@ -3,7 +3,7 @@ package org.dromara.web.service.impl;
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.constant.Constants;
@@ -29,6 +29,8 @@ import org.dromara.web.domain.vo.LoginVo;
 import org.dromara.web.service.IAuthStrategy;
 import org.dromara.web.service.SysLoginService;
 import org.springframework.stereotype.Service;
+
+import static org.dromara.system.domain.table.SysUserTableDef.SYS_USER;
 
 /**
  * 邮件认证策略
@@ -93,10 +95,10 @@ public class EmailAuthStrategy implements IAuthStrategy {
     }
 
     private SysUserVo loadUserByEmail(String tenantId, String email) {
-        SysUser user = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-            .select(SysUser::getEmail, SysUser::getStatus)
-            .eq(TenantHelper.isEnable(), SysUser::getTenantId, tenantId)
-            .eq(SysUser::getEmail, email));
+        SysUser user = userMapper.selectOneByQuery(QueryWrapper.create().from(SYS_USER)
+            .select(SYS_USER.EMAIL, SYS_USER.STATUS)
+            .where(SYS_USER.TENANT_ID.eq(tenantId, TenantHelper.isEnable()))
+            .and(SYS_USER.EMAIL.eq(email)));
         if (ObjectUtil.isNull(user)) {
             log.info("登录用户：{} 不存在.", email);
             throw new UserException("user.not.exists", email);

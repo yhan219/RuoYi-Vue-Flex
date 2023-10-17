@@ -1,6 +1,6 @@
 package org.dromara.demo.domain;
 
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Table;
 import org.dromara.common.encrypt.annotation.EncryptField;
 import org.dromara.common.encrypt.enumd.AlgorithmType;
 import lombok.Data;
@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("test_demo")
+@Table("test_demo")
 public class TestDemoEncrypt extends TestDemo {
 
     /**

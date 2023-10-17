@@ -2,18 +2,21 @@ package org.dromara.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import org.dromara.system.domain.SysDept;
-import org.dromara.common.mybatis.helper.DataBaseHelper;
+import com.mybatisflex.core.query.QueryWrapper;
+import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.StreamUtils;
+import org.dromara.common.mybatis.helper.DataBaseHelper;
+import org.dromara.system.domain.SysDept;
 import org.dromara.system.domain.SysRoleDept;
 import org.dromara.system.mapper.SysDeptMapper;
 import org.dromara.system.mapper.SysRoleDeptMapper;
 import org.dromara.system.service.ISysDataScopeService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static org.dromara.system.domain.table.SysDeptTableDef.SYS_DEPT;
+import static org.dromara.system.domain.table.SysRoleDeptTableDef.SYS_ROLE_DEPT;
 
 /**
  * 数据权限 实现
@@ -32,10 +35,9 @@ public class SysDataScopeServiceImpl implements ISysDataScopeService {
 
     @Override
     public String getRoleCustom(Long roleId) {
-        List<SysRoleDept> list = roleDeptMapper.selectList(
-            new LambdaQueryWrapper<SysRoleDept>()
-                .select(SysRoleDept::getDeptId)
-                .eq(SysRoleDept::getRoleId, roleId));
+        List<SysRoleDept> list = roleDeptMapper.selectListByQuery(
+            QueryWrapper.create().from(SYS_ROLE_DEPT).select(SYS_ROLE_DEPT.DEPT_ID)
+                .where(SYS_ROLE_DEPT.ROLE_ID.eq(roleId)));
         if (CollUtil.isNotEmpty(list)) {
             return StreamUtils.join(list, rd -> Convert.toStr(rd.getDeptId()));
         }
@@ -44,14 +46,13 @@ public class SysDataScopeServiceImpl implements ISysDataScopeService {
 
     @Override
     public String getDeptAndChild(Long deptId) {
-        List<SysDept> deptList = deptMapper.selectList(new LambdaQueryWrapper<SysDept>()
-            .select(SysDept::getDeptId)
-            .apply(DataBaseHelper.findInSet(deptId, "ancestors")));
+
+
+        List<SysDept> deptList = deptMapper.selectListByQuery(QueryWrapper.create().from(SYS_DEPT).select(SYS_DEPT.DEPT_ID).where(DataBaseHelper.findInSet(deptId, "ancestors")));
         List<Long> ids = StreamUtils.toList(deptList, SysDept::getDeptId);
         ids.add(deptId);
-        List<SysDept> list = deptMapper.selectList(new LambdaQueryWrapper<SysDept>()
-            .select(SysDept::getDeptId)
-            .in(SysDept::getDeptId, ids));
+        List<SysDept> list = deptMapper.selectListByQuery(QueryWrapper.create().from(SYS_DEPT).select(SYS_DEPT.DEPT_ID)
+            .where(SYS_DEPT.DEPT_ID.in(ids)));
         if (CollUtil.isNotEmpty(list)) {
             return StreamUtils.join(list, d -> Convert.toStr(d.getDeptId()));
         }

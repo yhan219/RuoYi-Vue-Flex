@@ -4,7 +4,7 @@ import cn.dev33.satoken.secure.BCrypt;
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.constant.Constants;
@@ -32,6 +32,8 @@ import org.dromara.web.domain.vo.LoginVo;
 import org.dromara.web.service.IAuthStrategy;
 import org.dromara.web.service.SysLoginService;
 import org.springframework.stereotype.Service;
+
+import static org.dromara.system.domain.table.SysUserTableDef.SYS_USER;
 
 /**
  * 密码认证策略
@@ -112,10 +114,12 @@ public class PasswordAuthStrategy implements IAuthStrategy {
     }
 
     private SysUserVo loadUserByUsername(String tenantId, String username) {
-        SysUser user = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-            .select(SysUser::getUserName, SysUser::getStatus)
-            .eq(TenantHelper.isEnable(), SysUser::getTenantId, tenantId)
-            .eq(SysUser::getUserName, username));
+        SysUser user = userMapper.selectOneByQuery(
+            QueryWrapper.create()
+                .select(SYS_USER.USER_NAME, SYS_USER.STATUS)
+                .from(SYS_USER)
+                .where(SYS_USER.TENANT_ID.eq(tenantId, TenantHelper.isEnable()))
+                .and(SYS_USER.USER_NAME.eq(username)));
         if (ObjectUtil.isNull(user)) {
             log.info("登录用户：{} 不存在.", username);
             throw new UserException("user.not.exists", username);

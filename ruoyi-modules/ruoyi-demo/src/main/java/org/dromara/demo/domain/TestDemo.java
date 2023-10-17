@@ -1,9 +1,11 @@
 package org.dromara.demo.domain;
 
-import com.baomidou.mybatisplus.annotation.*;
-import org.dromara.common.tenant.core.TenantEntity;
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.dromara.common.tenant.core.TenantEntity;
 
 import java.io.Serial;
 
@@ -15,7 +17,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("test_demo")
+@Table("test_demo")
 public class TestDemo extends TenantEntity {
 
     @Serial
@@ -24,7 +26,7 @@ public class TestDemo extends TenantEntity {
     /**
      * 主键
      */
-    @TableId(value = "id")
+    @Id
     private Long id;
 
     /**
@@ -40,7 +42,6 @@ public class TestDemo extends TenantEntity {
     /**
      * 排序号
      */
-    @OrderBy(asc = false, sort = 1)
     private Integer orderNum;
 
     /**
@@ -56,13 +57,12 @@ public class TestDemo extends TenantEntity {
     /**
      * 版本
      */
-    @Version
+    @Column(version = true)
     private Long version;
 
     /**
      * 删除标志
      */
-    @TableLogic
     private Long delFlag;
 
 }

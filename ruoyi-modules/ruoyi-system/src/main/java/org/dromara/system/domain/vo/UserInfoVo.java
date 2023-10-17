@@ -1,5 +1,6 @@
 package org.dromara.system.domain.vo;
 
+import com.mybatisflex.annotation.Column;
 import lombok.Data;
 
 import java.util.Set;
@@ -20,11 +21,13 @@ public class UserInfoVo {
     /**
      * 菜单权限
      */
+    @Column("permission")
     private Set<String> permissions;
 
     /**
      * 角色权限
      */
+    @Column("role")
     private Set<String> roles;
 
 }

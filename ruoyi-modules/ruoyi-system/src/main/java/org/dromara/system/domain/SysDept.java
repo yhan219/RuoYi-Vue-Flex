@@ -1,11 +1,11 @@
 package org.dromara.system.domain;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
-import org.dromara.common.tenant.core.TenantEntity;
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.dromara.common.tenant.core.TenantEntity;
 
 import java.io.Serial;
 
@@ -17,7 +17,7 @@ import java.io.Serial;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("sys_dept")
+@Table("sys_dept")
 public class SysDept extends TenantEntity {
 
     @Serial
@@ -26,7 +26,7 @@ public class SysDept extends TenantEntity {
     /**
      * 部门ID
      */
-    @TableId(value = "dept_id")
+    @Id
     private Long deptId;
 
     /**
@@ -67,7 +67,6 @@ public class SysDept extends TenantEntity {
     /**
      * 删除标志（0代表存在 2代表删除）
      */
-    @TableLogic
     private String delFlag;
 
     /**

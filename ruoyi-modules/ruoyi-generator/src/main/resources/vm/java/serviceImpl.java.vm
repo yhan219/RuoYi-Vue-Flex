@@ -5,10 +5,9 @@ import org.dromara.common.core.utils.StringUtils;
 #if($table.crud || $table.sub)
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
 #end
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ${packageName}.domain.bo.${ClassName}Bo;
@@ -20,6 +19,10 @@ import ${packageName}.service.I${ClassName}Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Collection;
+
+    #set($TABLE_NAME = ${tableName.toUpperCase()})
+import static org.dromara.system.domain.table.${ClassName}TableDef.$TABLE_NAME;
+
 
 /**
  * ${functionName}Service业务层处理
@@ -37,8 +40,8 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service {
      * 查询${functionName}
      */
     @Override
-    public ${ClassName}Vo queryById(${pkColumn.javaType} ${pkColumn.javaField}){
-        return baseMapper.selectVoById(${pkColumn.javaField});
+    public ${ClassName}Vo queryById(${pkColumn.javaType} ${pkColumn.javaField}) {
+        return baseMapper.selectOneWithRelationsByIdAs(${pkColumn.javaField}, ${ClassName}Vo.class);
     }
 
 #if($table.crud || $table.sub)
@@ -47,8 +50,8 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service {
      */
     @Override
     public TableDataInfo<${ClassName}Vo> queryPageList(${ClassName}Bo bo, PageQuery pageQuery) {
-        LambdaQueryWrapper<${ClassName}> lqw = buildQueryWrapper(bo);
-        Page<${ClassName}Vo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
+        QueryWrapper qw = buildQueryWrapper(bo);
+        Page<${ClassName}Vo> result = baseMapper.paginateAs(pageQuery, qw, ${ClassName}Vo.class);
         return TableDataInfo.build(result);
     }
 #end
@@ -58,35 +61,47 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service {
      */
     @Override
     public List<${ClassName}Vo> queryList(${ClassName}Bo bo) {
-        LambdaQueryWrapper<${ClassName}> lqw = buildQueryWrapper(bo);
-        return baseMapper.selectVoList(lqw);
+        QueryWrapper qw = buildQueryWrapper(bo);
+        return baseMapper.selectListByQueryAs(qw, ${ClassName}Vo.class);
     }
 
-    private LambdaQueryWrapper<${ClassName}> buildQueryWrapper(${ClassName}Bo bo) {
+    private QueryWrapper buildQueryWrapper(${ClassName}Bo bo) {
         Map<String, Object> params = bo.getParams();
-        LambdaQueryWrapper<${ClassName}> lqw = Wrappers.lambdaQuery();
+        return QueryWrapper.create()
+            .from($TABLE_NAME)
+#set($count = 1)
+#set($endCount = 0)
 #foreach($column in $columns)
 #if($column.query)
-#set($queryType=$column.queryType)
-#set($javaField=$column.javaField)
-#set($javaType=$column.javaType)
-#set($columnName=$column.columnName)
-#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
-#set($mpMethod=$column.queryType.toLowerCase())
-#if($queryType != 'BETWEEN')
-#if($javaType == 'String')
-#set($condition='StringUtils.isNotBlank(bo.get'+$AttrName+'())')
-#else
-#set($condition='bo.get'+$AttrName+'() != null')
-#end
-        lqw.$mpMethod($condition, ${ClassName}::get$AttrName, bo.get$AttrName());
-#else
-        lqw.between(params.get("begin$AttrName") != null && params.get("end$AttrName") != null,
-            ${ClassName}::get$AttrName ,params.get("begin$AttrName"), params.get("end$AttrName"));
+    #set($endCount = $endCount + 1)
 #end
 #end
+#foreach($column in $columns)
+    #if($column.query)
+        #set($queryType=$column.queryType)
+        #set($javaField=$column.javaField)
+        #set($javaType=$column.javaType)
+        #set($columnName=${column.columnName.toUpperCase()})
+        #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+        #if($count == 1)
+            #set($mfQuery='where')
+        #else
+            #set($mfQuery='and')
+        #end
+        #if($count == $endCount)
+            #set($end=';')
+        #else
+            #set($end='')
+        #end
+        #set($mfMethod=$column.queryType.toLowerCase())
+        #if($queryType != 'BETWEEN')
+            .$mfQuery($TABLE_NAME.$columnName.$mfMethod(bo.get$AttrName()))$end
+        #else
+            .$mfQuery($TABLE_NAME.${columnName}.between(params.get("begin$AttrName"), params.get("end$AttrName"), params.get("begin$AttrName") != null && params.get("end$AttrName") != null))$end
+        #end
+        #set($count = $count + 1)
+    #end
 #end
-        return lqw;
     }
 
     /**
@@ -97,7 +112,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service {
         ${ClassName} add = MapstructUtils.convert(bo, ${ClassName}.class);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
-#set($pk=$pkColumn.javaField.substring(0,1).toUpperCase() + ${pkColumn.javaField.substring(1)})
+        #set($pk=$pkColumn.javaField.substring(0,1).toUpperCase() + ${pkColumn.javaField.substring(1)})
         if (flag) {
             bo.set$pk(add.get$pk());
         }
@@ -111,13 +126,13 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service {
     public Boolean updateByBo(${ClassName}Bo bo) {
         ${ClassName} update = MapstructUtils.convert(bo, ${ClassName}.class);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        return baseMapper.update(update) > 0;
     }
 
     /**
      * 保存前的数据校验
      */
-    private void validEntityBeforeSave(${ClassName} entity){
+    private void validEntityBeforeSave(${ClassName} entity) {
         //TODO 做一些数据校验,如唯一约束
     }
 
@@ -126,9 +141,9 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service {
      */
     @Override
     public Boolean deleteWithValidByIds(Collection<${pkColumn.javaType}> ids, Boolean isValid) {
-        if(isValid){
+        if (isValid) {
             //TODO 做一些业务上的校验,判断是否需要校验
         }
-        return baseMapper.deleteBatchIds(ids) > 0;
+        return baseMapper.deleteBatchByIds(ids) > 0;
     }
 }

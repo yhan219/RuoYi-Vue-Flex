@@ -1,0 +1,117 @@
+package org.dromara.common.mybatis.config;
+
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.http.HttpStatus;
+import com.mybatisflex.annotation.InsertListener;
+import com.mybatisflex.annotation.UpdateListener;
+import com.mybatisflex.core.FlexGlobalConfig;
+import com.mybatisflex.core.query.QueryColumnBehavior;
+import com.mybatisflex.spring.boot.MyBatisFlexCustomizer;
+import lombok.extern.slf4j.Slf4j;
+import org.dromara.common.core.domain.model.LoginUser;
+import org.dromara.common.core.exception.ServiceException;
+import org.dromara.common.core.factory.YmlPropertySourceFactory;
+import org.dromara.common.mybatis.core.domain.BaseEntity;
+import org.dromara.common.satoken.utils.LoginHelper;
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import java.util.Date;
+
+/**
+ * mybatis-flex配置类(下方注释有插件介绍)
+ *
+ * @author yhan219
+ */
+@EnableTransactionManagement(proxyTargetClass = true)
+@AutoConfiguration
+@Slf4j
+@PropertySource(value = "classpath:common-mybatis.yml", factory = YmlPropertySourceFactory.class)
+@MapperScan("org.dromara.**.mapper")
+public class MybatisFlexConfig implements MyBatisFlexCustomizer {
+
+
+
+    static {
+        QueryColumnBehavior.setIgnoreFunction(QueryColumnBehavior.IGNORE_BLANK);
+        QueryColumnBehavior.setSmartConvertInToEquals(true);
+    }
+
+
+    @Override
+    public void customize(FlexGlobalConfig globalConfig) {
+
+        //我们可以在这里进行一些列的初始化配置
+        InsertListener insertListener = o -> {
+            try {
+                if (ObjectUtil.isNotNull(o) && o instanceof BaseEntity baseEntity) {
+                    Date current = ObjectUtil.isNotNull(baseEntity.getCreateTime())
+                        ? baseEntity.getCreateTime() : new Date();
+                    baseEntity.setCreateTime(current);
+                    baseEntity.setUpdateTime(current);
+                    LoginUser loginUser = getLoginUser();
+                    if (ObjectUtil.isNotNull(loginUser)) {
+                        Long userId = ObjectUtil.isNotNull(baseEntity.getCreateBy())
+                            ? baseEntity.getCreateBy() : loginUser.getUserId();
+                        // 当前已登录 且 创建人为空 则填充
+                        baseEntity.setCreateBy(userId);
+                        // 当前已登录 且 更新人为空 则填充
+                        baseEntity.setUpdateBy(userId);
+                        baseEntity.setCreateDept(ObjectUtil.isNotNull(baseEntity.getCreateDept())
+                            ? baseEntity.getCreateDept() : loginUser.getDeptId());
+                    }
+                }
+            } catch (Exception e) {
+                throw new ServiceException("自动注入异常 => " + e.getMessage(), HttpStatus.HTTP_UNAUTHORIZED);
+            }
+        };
+
+        UpdateListener updateListener = o -> {
+
+            try {
+                if (ObjectUtil.isNotNull(o) && o instanceof BaseEntity baseEntity) {
+                    Date current = new Date();
+                    // 更新时间填充(不管为不为空)
+                    baseEntity.setUpdateTime(current);
+                    LoginUser loginUser = getLoginUser();
+                    // 当前已登录 更新人填充(不管为不为空)
+                    if (ObjectUtil.isNotNull(loginUser)) {
+                        baseEntity.setUpdateBy(loginUser.getUserId());
+                    }
+                }
+            } catch (Exception e) {
+                throw new ServiceException("自动注入异常 => " + e.getMessage(), HttpStatus.HTTP_UNAUTHORIZED);
+            }
+        };
+        globalConfig.registerInsertListener(insertListener, BaseEntity.class);
+        globalConfig.registerUpdateListener(updateListener, BaseEntity.class);
+
+    }
+
+    private LoginUser getLoginUser() {
+        LoginUser loginUser;
+        try {
+            loginUser = LoginHelper.getLoginUser();
+        } catch (Exception e) {
+            log.warn("自动注入警告 => 用户未登录");
+            return null;
+        }
+        return loginUser;
+    }
+
+
+    //@Bean
+    //public PlusDataPermissionInterceptor plusDataPermissionInterceptor(PlusDataPermissionHandler plusDataPermissionHandler) {
+    //    return new PlusDataPermissionInterceptor(plusDataPermissionHandler);
+    //}
+
+
+    //@Bean
+    //public PageInterceptor pageInterceptor() {
+    //    return new PageInterceptor();
+    //}
+
+
+}

@@ -9,6 +9,6 @@ import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
  *
  * @author Michelle.Chung
  */
-public interface SysTenantMapper extends BaseMapperPlus<SysTenant, SysTenantVo> {
+public interface SysTenantMapper extends BaseMapperPlus<SysTenant> {
 
 }

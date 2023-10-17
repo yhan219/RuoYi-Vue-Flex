@@ -1,11 +1,12 @@
 package org.dromara.system.domain;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import java.io.Serial;
-
 import org.dromara.common.mybatis.core.domain.BaseEntity;
+
+import java.io.Serial;
 
 /**
  * 租户套餐对象 sys_tenant_package
@@ -14,7 +15,7 @@ import org.dromara.common.mybatis.core.domain.BaseEntity;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("sys_tenant_package")
+@Table("sys_tenant_package")
 public class SysTenantPackage extends BaseEntity {
 
     @Serial
@@ -23,7 +24,7 @@ public class SysTenantPackage extends BaseEntity {
     /**
      * 租户套餐id
      */
-    @TableId(value = "package_id")
+    @Id
     private Long packageId;
     /**
      * 套餐名称
@@ -48,7 +49,6 @@ public class SysTenantPackage extends BaseEntity {
     /**
      * 删除标志（0代表存在 2代表删除）
      */
-    @TableLogic
     private String delFlag;
 
 }

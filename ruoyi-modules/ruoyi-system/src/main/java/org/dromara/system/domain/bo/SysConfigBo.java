@@ -1,5 +1,6 @@
 package org.dromara.system.domain.bo;
 
+import lombok.Builder;
 import org.dromara.common.core.validate.AddGroup;
 import org.dromara.common.core.validate.EditGroup;
 import org.dromara.system.domain.SysConfig;
@@ -18,6 +19,7 @@ import org.dromara.common.mybatis.core.domain.BaseEntity;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
+@Builder
 @AutoMapper(target = SysConfig.class, reverseConvertGenerate = false)
 public class SysConfigBo extends BaseEntity {
 

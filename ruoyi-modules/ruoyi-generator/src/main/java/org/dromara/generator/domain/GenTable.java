@@ -1,16 +1,16 @@
 package org.dromara.generator.domain;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.mybatis.core.domain.BaseEntity;
-import org.dromara.generator.constant.GenConstants;
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.RelationOneToMany;
+import com.mybatisflex.annotation.Table;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.dromara.common.core.utils.StringUtils;
+import org.dromara.common.mybatis.core.domain.BaseEntity;
+import org.dromara.generator.constant.GenConstants;
 
 import java.util.List;
 
@@ -22,13 +22,13 @@ import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("gen_table")
+@Table("gen_table")
 public class GenTable extends BaseEntity {
 
     /**
      * 编号
      */
-    @TableId(value = "table_id")
+    @Id
     private Long tableId;
 
     /**
@@ -108,20 +108,20 @@ public class GenTable extends BaseEntity {
     /**
      * 生成路径（不填默认项目路径）
      */
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     private String genPath;
 
     /**
      * 主键信息
      */
-    @TableField(exist = false)
+    @Column(ignore = true)
     private GenTableColumn pkColumn;
 
     /**
      * 表列信息
      */
     @Valid
-    @TableField(exist = false)
+    @Column(ignore = true)
+    @RelationOneToMany(selfField = "tableId", targetField = "tableId",orderBy = "sort")
     private List<GenTableColumn> columns;
 
     /**
@@ -137,37 +137,37 @@ public class GenTable extends BaseEntity {
     /**
      * 树编码字段
      */
-    @TableField(exist = false)
+    @Column(ignore = true)
     private String treeCode;
 
     /**
      * 树父编码字段
      */
-    @TableField(exist = false)
+    @Column(ignore = true)
     private String treeParentCode;
 
     /**
      * 树名称字段
      */
-    @TableField(exist = false)
+    @Column(ignore = true)
     private String treeName;
 
     /*
      * 菜单id列表
      */
-    @TableField(exist = false)
+    @Column(ignore = true)
     private List<Long> menuIds;
 
     /**
      * 上级菜单ID字段
      */
-    @TableField(exist = false)
+    @Column(ignore = true)
     private String parentMenuId;
 
     /**
      * 上级菜单名称字段
      */
-    @TableField(exist = false)
+    @Column(ignore = true)
     private String parentMenuName;
 
     public boolean isTree() {

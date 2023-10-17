@@ -1,6 +1,6 @@
 package org.dromara.system.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.system.domain.SysSocial;
@@ -11,6 +11,8 @@ import org.dromara.system.service.ISysSocialService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static org.dromara.system.domain.table.SysSocialTableDef.SYS_SOCIAL;
 
 /**
  * 社会化关系Service业务层处理
@@ -30,7 +32,7 @@ public class SysSocialServiceImpl implements ISysSocialService {
      */
     @Override
     public SysSocialVo queryById(String id) {
-        return baseMapper.selectVoById(id);
+        return baseMapper.selectOneWithRelationsByIdAs(id,SysSocialVo.class);
     }
 
     /**
@@ -38,12 +40,12 @@ public class SysSocialServiceImpl implements ISysSocialService {
      */
     @Override
     public List<SysSocialVo> queryList() {
-        return baseMapper.selectVoList();
+        return baseMapper.selectListByQueryAs(QueryWrapper.create().from(SYS_SOCIAL), SysSocialVo.class);
     }
 
     @Override
     public List<SysSocialVo> queryListByUserId(Long userId) {
-        return baseMapper.selectVoList(new LambdaQueryWrapper<SysSocial>().eq(SysSocial::getUserId, userId));
+        return baseMapper.selectListByQueryAs(QueryWrapper.create().from(SYS_SOCIAL).where(SYS_SOCIAL.USER_ID.eq(userId)), SysSocialVo.class);
     }
 
 
@@ -54,7 +56,7 @@ public class SysSocialServiceImpl implements ISysSocialService {
     public Boolean insertByBo(SysSocialBo bo) {
         SysSocial add = MapstructUtils.convert(bo, SysSocial.class);
         validEntityBeforeSave(add);
-        boolean flag = baseMapper.insert(add) > 0;
+        boolean flag = baseMapper.insert(add,true) > 0;
         if (flag) {
             if (add != null) {
                 bo.setId(add.getId());
@@ -72,7 +74,7 @@ public class SysSocialServiceImpl implements ISysSocialService {
     public Boolean updateByBo(SysSocialBo bo) {
         SysSocial update = MapstructUtils.convert(bo, SysSocial.class);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        return baseMapper.update(update) > 0;
     }
 
     /**
@@ -100,7 +102,7 @@ public class SysSocialServiceImpl implements ISysSocialService {
      */
     @Override
     public SysSocialVo selectByAuthId(String authId) {
-        return baseMapper.selectVoOne(new LambdaQueryWrapper<SysSocial>().eq(SysSocial::getAuthId, authId));
+        return baseMapper.selectOneByQueryAs(QueryWrapper.create().from(SYS_SOCIAL).where(SYS_SOCIAL.AUTH_ID.eq(authId)),SysSocialVo.class);
     }
 
 }

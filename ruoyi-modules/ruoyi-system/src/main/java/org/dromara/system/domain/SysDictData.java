@@ -1,7 +1,7 @@
 package org.dromara.system.domain;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import org.dromara.common.core.constant.UserConstants;
 import org.dromara.common.tenant.core.TenantEntity;
 import lombok.Data;
@@ -15,13 +15,13 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("sys_dict_data")
+@Table("sys_dict_data")
 public class SysDictData extends TenantEntity {
 
     /**
      * 字典编码
      */
-    @TableId(value = "dict_code")
+    @Id
     private Long dictCode;
 
     /**

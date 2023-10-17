@@ -1,16 +1,12 @@
 package org.dromara.generator.domain;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.mybatis.core.domain.BaseEntity;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.ibatis.type.JdbcType;
-
-import jakarta.validation.constraints.NotBlank;
+import org.dromara.common.core.utils.StringUtils;
+import org.dromara.common.mybatis.core.domain.BaseEntity;
 
 /**
  * 代码生成业务字段表 gen_table_column
@@ -20,13 +16,13 @@ import jakarta.validation.constraints.NotBlank;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("gen_table_column")
+@Table("gen_table_column")
 public class GenTableColumn extends BaseEntity {
 
     /**
      * 编号
      */
-    @TableId(value = "column_id")
+    @Id
     private Long columnId;
 
     /**
@@ -42,7 +38,6 @@ public class GenTableColumn extends BaseEntity {
     /**
      * 列描述
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED, jdbcType = JdbcType.VARCHAR)
     private String columnComment;
 
     /**
@@ -64,43 +59,36 @@ public class GenTableColumn extends BaseEntity {
     /**
      * 是否主键（1是）
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED, jdbcType = JdbcType.VARCHAR)
     private String isPk;
 
     /**
      * 是否自增（1是）
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED, jdbcType = JdbcType.VARCHAR)
     private String isIncrement;
 
     /**
      * 是否必填（1是）
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED, jdbcType = JdbcType.VARCHAR)
     private String isRequired;
 
     /**
      * 是否为插入字段（1是）
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED, jdbcType = JdbcType.VARCHAR)
     private String isInsert;
 
     /**
      * 是否编辑字段（1是）
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED, jdbcType = JdbcType.VARCHAR)
     private String isEdit;
 
     /**
      * 是否列表字段（1是）
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED, jdbcType = JdbcType.VARCHAR)
     private String isList;
 
     /**
      * 是否查询字段（1是）
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED, jdbcType = JdbcType.VARCHAR)
     private String isQuery;
 
     /**

@@ -91,7 +91,7 @@ public class SysProfileController extends BaseController {
             return R.fail("新密码不能与旧密码相同");
         }
 
-        if (userService.resetUserPwd(user.getUserId(), BCrypt.hashpw(bo.getNewPassword())) > 0) {
+        if (userService.resetUserPwd(user.getUserId(), BCrypt.hashpw(bo.getNewPassword()))) {
             return R.ok();
         }
         return R.fail("修改密码异常，请联系管理员");

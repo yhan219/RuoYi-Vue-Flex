@@ -1,12 +1,12 @@
 package org.dromara.common.mybatis.helper;
 
 import cn.hutool.core.convert.Convert;
-import com.baomidou.dynamic.datasource.DynamicRoutingDataSource;
+import com.mybatisflex.core.datasource.FlexDataSource;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.mybatis.enums.DataBaseType;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -14,7 +14,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 数据库助手
@@ -24,13 +23,13 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DataBaseHelper {
 
-    private static final DynamicRoutingDataSource DS = SpringUtils.getBean(DynamicRoutingDataSource.class);
+    private static final FlexDataSource DS = SpringUtils.getBean(FlexDataSource.class);
 
     /**
      * 获取当前数据库类型
      */
     public static DataBaseType getDataBaseType() {
-        DataSource dataSource = DS.determineDataSource();
+        DataSource dataSource = DS.getDefaultDataSource();
         try (Connection conn = dataSource.getConnection()) {
             DatabaseMetaData metaData = conn.getMetaData();
             String databaseProductName = metaData.getDatabaseProductName();
@@ -77,6 +76,6 @@ public class DataBaseHelper {
      * 获取当前加载的数据库名
      */
     public static List<String> getDataSourceNameList() {
-        return new ArrayList<>(DS.getDataSources().keySet());
+        return new ArrayList<>(DS.getDataSourceMap().keySet());
     }
 }

@@ -1,12 +1,11 @@
 package org.dromara.demo.domain;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.Version;
-import org.dromara.common.tenant.core.TenantEntity;
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.dromara.common.tenant.core.TenantEntity;
 
 import java.io.Serial;
 
@@ -18,7 +17,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("test_tree")
+@Table("test_tree")
 public class TestTree extends TenantEntity {
 
     @Serial
@@ -27,7 +26,7 @@ public class TestTree extends TenantEntity {
     /**
      * 主键
      */
-    @TableId(value = "id")
+    @Id
     private Long id;
 
     /**
@@ -53,13 +52,12 @@ public class TestTree extends TenantEntity {
     /**
      * 版本
      */
-    @Version
+    @Column(version = true)
     private Long version;
 
     /**
      * 删除标志
      */
-    @TableLogic
     private Long delFlag;
 
 }
