@@ -65,6 +65,8 @@ public class SysOperLogServiceImpl implements ISysOperLogService {
         Map<String, Object> params = operLog.getParams();
 
         QueryWrapper queryWrapper = QueryWrapper.create().from(SYS_OPER_LOG)
+            .like(StringUtils.isNotBlank(operLog.getOperIp()), SysOperLog::getOperIp, operLog.getOperIp())
+
             .where(SYS_OPER_LOG.TITLE.like(operLog.getTitle()))
             .and(SYS_OPER_LOG.BUSINESS_TYPE.eq(operLog.getBusinessType(), operLog.getBusinessType() != null && operLog.getBusinessType() > 0))
             .and(SYS_OPER_LOG.STATUS.eq(operLog.getStatus()))
