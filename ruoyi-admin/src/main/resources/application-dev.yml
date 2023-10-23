@@ -46,6 +46,11 @@ spring:
       # 多久检查一次连接的活性
       keepaliveTime: 30000
 mybatis-flex:
+  configuration:
+    # 开启sql审计
+    audit_enable: true
+    # 开启sql打印，开启sql打印默认会开启sql审计
+    sql_print: true
   datasource:
     # 主库数据源
     master:

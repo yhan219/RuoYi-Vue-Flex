@@ -35,11 +35,6 @@
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis-spring</artifactId>
         </dependency>
-        <!-- sql性能分析插件 -->
-        <dependency>
-            <groupId>p6spy</groupId>
-            <artifactId>p6spy</artifactId>
-        </dependency>
     </dependencies>
 
 </project>

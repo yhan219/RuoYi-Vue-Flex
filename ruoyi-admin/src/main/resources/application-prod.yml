@@ -31,69 +31,62 @@ powerjob:
 spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    # 动态数据源文档 https://www.kancloud.cn/tracy5546/dynamic-datasource/content
-    dynamic:
-      # 性能分析插件(有性能损耗 不建议生产环境使用)
-      p6spy: false
-      # 设置默认的数据源或者数据源组,默认值即为 master
-      primary: master
-      # 严格模式 匹配不到数据源则报错
-      strict: true
-      datasource:
-        # 主库数据源
-        master:
-          type: ${spring.datasource.type}
-          driverClassName: com.mysql.cj.jdbc.Driver
-          # jdbc 所有参数配置参考 https://lionli.blog.csdn.net/article/details/122018562
-          # rewriteBatchedStatements=true 批处理优化 大幅提升批量插入更新删除性能(对数据库有性能损耗 使用批量操作应考虑性能问题)
-          url: jdbc:mysql://localhost:3306/ry-vue?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
-          username: root
-          password: root
-        # 从库数据源
-        slave:
-          lazy: true
-          type: ${spring.datasource.type}
-          driverClassName: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://localhost:3306/ry-vue?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
-          username:
-          password:
-#        oracle:
-#          type: ${spring.datasource.type}
-#          driverClassName: oracle.jdbc.OracleDriver
-#          url: jdbc:oracle:thin:@//localhost:1521/XE
-#          username: ROOT
-#          password: root
-#          hikari:
-#            connectionTestQuery: SELECT 1 FROM DUAL
-#        postgres:
-#          type: ${spring.datasource.type}
-#          driverClassName: org.postgresql.Driver
-#          url: jdbc:postgresql://localhost:5432/postgres?useUnicode=true&characterEncoding=utf8&useSSL=true&autoReconnect=true&reWriteBatchedInserts=true
-#          username: root
-#          password: root
-#        sqlserver:
-#          type: ${spring.datasource.type}
-#          driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
-#          url: jdbc:sqlserver://localhost:1433;DatabaseName=tempdb;SelectMethod=cursor;encrypt=false;rewriteBatchedStatements=true
-#          username: SA
-#          password: root
-      hikari:
-        # 最大连接池数量
-        maxPoolSize: 20
-        # 最小空闲线程数量
-        minIdle: 10
-        # 配置获取连接等待超时的时间
-        connectionTimeout: 30000
-        # 校验超时时间
-        validationTimeout: 5000
-        # 空闲连接存活最大时间，默认10分钟
-        idleTimeout: 600000
-        # 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认30分钟
-        maxLifetime: 1800000
-        # 连接测试query（配置检测连接是否有效）
-        connectionTestQuery: SELECT 1
-        # 多久检查一次连接的活性
-        keepaliveTime: 30000
+    hikari:
+      # 最大连接池数量
+      maximum-pool-size: 20
+      # 最小空闲线程数量
+      minimum-idle: 10
+      # 配置获取连接等待超时的时间
+      connectionTimeout: 30000
+      # 校验超时时间
+      validationTimeout: 5000
+      # 空闲连接存活最大时间，默认10分钟
+      idleTimeout: 600000
+      # 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认30分钟
+      maxLifetime: 1800000
+      # 连接测试query（配置检测连接是否有效）
+      connectionTestQuery: SELECT 1
+      # 多久检查一次连接的活性
+      keepaliveTime: 30000
+mybatis-flex:
+  configuration:
+    # 开启sql审计
+    audit_enable: false
+    # 开启sql打印，开启sql打印默认会开启sql审计
+    sql_print: false
+  datasource:
+    # 主库数据源
+    master:
+      # jdbc 所有参数配置参考 https://lionli.blog.csdn.net/article/details/122018562
+      # rewriteBatchedStatements=true 批处理优化 大幅提升批量插入更新删除性能(对数据库有性能损耗 使用批量操作应考虑性能问题)
+      url: jdbc:mysql://localhost:3306/ry-vue?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
+      username: root
+      password: 123456
+    # 从库数据源
+    slave:
+      url: jdbc:mysql://localhost:3306/ry-vue?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
+      username: root
+      password: 123456
+  #        oracle:
+  #          type: ${spring.datasource.type}
+  #          driverClassName: oracle.jdbc.OracleDriver
+  #          url: jdbc:oracle:thin:@//localhost:1521/XE
+  #          username: ROOT
+  #          password: root
+  #          hikari:
+  #            connectionTestQuery: SELECT 1 FROM DUAL
+  #        postgres:
+  #          type: ${spring.datasource.type}
+  #          driverClassName: org.postgresql.Driver
+  #          url: jdbc:postgresql://localhost:5432/postgres?useUnicode=true&characterEncoding=utf8&useSSL=true&autoReconnect=true&reWriteBatchedInserts=true
+  #          username: root
+  #          password: root
+  #        sqlserver:
+  #          type: ${spring.datasource.type}
+  #          driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  #          url: jdbc:sqlserver://localhost:1433;DatabaseName=tempdb;SelectMethod=cursor;encrypt=false;rewriteBatchedStatements=true
+  #          username: SA
+  #          password: root
 
 --- # redis 单机配置(单机与集群只能开启一个另一个需要注释掉)
 spring.data:
@@ -251,3 +244,5 @@ justauth:
       client-id: 10**********6
       client-secret: 1f7d08**********5b7**********29e
       redirect-uri: ${justauth.address}/social-callback?source=gitlab
+
+

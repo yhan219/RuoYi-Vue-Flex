@@ -5,6 +5,9 @@ import cn.hutool.http.HttpStatus;
 import com.mybatisflex.annotation.InsertListener;
 import com.mybatisflex.annotation.UpdateListener;
 import com.mybatisflex.core.FlexGlobalConfig;
+import com.mybatisflex.core.audit.AuditManager;
+import com.mybatisflex.core.audit.ConsoleMessageCollector;
+import com.mybatisflex.core.audit.MessageCollector;
 import com.mybatisflex.core.query.QueryColumnBehavior;
 import com.mybatisflex.spring.boot.MyBatisFlexCustomizer;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +17,7 @@ import org.dromara.common.core.factory.YmlPropertySourceFactory;
 import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -33,6 +37,12 @@ import java.util.Date;
 public class MybatisFlexConfig implements MyBatisFlexCustomizer {
 
 
+    @Value("${mybatis-flex.configuration.audit_enable}")
+    private Boolean enableAudit = false;
+
+    @Value("${mybatis-flex.configuration.sql_print}")
+    private Boolean sqlPrint = false;
+
 
     static {
         QueryColumnBehavior.setIgnoreFunction(QueryColumnBehavior.IGNORE_BLANK);
@@ -40,8 +50,19 @@ public class MybatisFlexConfig implements MyBatisFlexCustomizer {
     }
 
 
+
     @Override
     public void customize(FlexGlobalConfig globalConfig) {
+
+        AuditManager.setAuditEnable(enableAudit);
+        if (sqlPrint) {
+            // 开启sql打印默认会开启sql审计
+            AuditManager.setAuditEnable(true);
+            //设置 SQL 审计收集器
+            MessageCollector collector = new ConsoleMessageCollector();
+            AuditManager.setMessageCollector(collector);
+        }
+
 
         //我们可以在这里进行一些列的初始化配置
         InsertListener insertListener = o -> {

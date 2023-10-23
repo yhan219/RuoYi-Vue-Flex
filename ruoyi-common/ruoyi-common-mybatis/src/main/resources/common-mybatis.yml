@@ -16,6 +16,10 @@ mybatis-flex:
     # 关闭日志记录 (可单纯使用 p6spy 分析) org.apache.ibatis.logging.nologging.NoLoggingImpl
     # 默认日志输出 org.apache.ibatis.logging.slf4j.Slf4jImpl
     log_impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+    # sql审计
+    audit_enable: true
+    # sql打印
+    sql_print: true
   global-config:
     # 是否打印 Logo banner
     print-banner: true
