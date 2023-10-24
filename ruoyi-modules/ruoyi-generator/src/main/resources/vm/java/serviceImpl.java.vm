@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Collection;
 
     #set($TABLE_NAME = ${tableName.toUpperCase()})
-import static org.dromara.system.domain.table.${ClassName}TableDef.$TABLE_NAME;
+import static ${packageName}.domain.table.${ClassName}TableDef.$TABLE_NAME;
 
 
 /**
