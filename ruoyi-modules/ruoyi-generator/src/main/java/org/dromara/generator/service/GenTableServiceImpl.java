@@ -6,7 +6,7 @@ import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjectUtil;
 import com.mybatisflex.core.BaseMapper;
 import com.mybatisflex.core.datasource.DataSourceKey;
-import com.mybatisflex.core.keygen.impl.SnowFlakeIDKeyGenerator;
+import com.mybatisflex.core.keygen.impl.FlexIDKeyGenerator;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.*;
 import com.mybatisflex.core.row.Db;
@@ -308,7 +308,7 @@ public class GenTableServiceImpl implements IGenTableService {
         GenTable table = baseMapper.selectOneWithRelationsById(tableId);
         List<Long> menuIds = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
-            menuIds.add(new SnowFlakeIDKeyGenerator().nextId());
+            menuIds.add(Long.valueOf(new FlexIDKeyGenerator().generate(null, null).toString()));
         }
         table.setMenuIds(menuIds);
         // 设置主键列信息
@@ -459,7 +459,7 @@ public class GenTableServiceImpl implements IGenTableService {
         GenTable table = baseMapper.selectOneWithRelationsById(tableId);
         List<Long> menuIds = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
-            menuIds.add(new SnowFlakeIDKeyGenerator().nextId());
+            menuIds.add(Long.valueOf(new FlexIDKeyGenerator().generate(null, null).toString()));
         }
         table.setMenuIds(menuIds);
         // 设置主键列信息
