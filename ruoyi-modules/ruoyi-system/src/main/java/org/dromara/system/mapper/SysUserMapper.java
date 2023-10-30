@@ -27,6 +27,7 @@ import static org.dromara.system.domain.table.SysUserTableDef.SYS_USER;
 public interface SysUserMapper extends BaseMapperPlus<SysUser> {
 
     default Page<SysUserVo> selectPageUserList(PageQuery pageQuery, QueryWrapper queryWrapper) {
+        selectListVo(queryWrapper);
         Page<SysUserDto> sysUserDtoPage = this.paginateAs(pageQuery, queryWrapper, SysUserDto.class, DataPermission.of(
                 DataColumn.of("deptName", "d.dept_id"),
                 DataColumn.of("userName", "u.user_id")
@@ -38,6 +39,14 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
         return p;
     }
 
+    default void selectListVo(QueryWrapper queryWrapper) {
+        queryWrapper.select(SYS_USER.USER_ID, SYS_USER.DEPT_ID, SYS_USER.NICK_NAME, SYS_USER.USER_NAME, SYS_USER.EMAIL, SYS_USER.AVATAR, SYS_USER.PHONENUMBER, SYS_USER.SEX,
+                SYS_USER.STATUS, SYS_USER.DEL_FLAG, SYS_USER.LOGIN_IP, SYS_USER.LOGIN_DATE, SYS_USER.CREATE_BY, SYS_USER.CREATE_TIME, SYS_USER.REMARK,
+                SYS_DEPT.DEPT_NAME, SYS_DEPT.LEADER, SYS_USER.USER_NAME.as("leaderName"))
+            .leftJoin(SYS_DEPT).as("d").on(SYS_USER.DEPT_ID.eq(SYS_DEPT.DEPT_ID))
+            .leftJoin(SYS_USER).as("u1").on(SYS_USER.USER_ID.eq(SYS_DEPT.LEADER));
+    }
+
     /**
      * 根据条件分页查询用户列表
      *
@@ -47,6 +56,7 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
 
 
     default List<SysUserVo> selectUserList(QueryWrapper queryWrapper) {
+        selectListVo(queryWrapper);
         List<SysUserDto> sysUserDtos = this.selectListByQueryAs(queryWrapper, SysUserDto.class, DataPermission.of(
                 DataColumn.of("deptName", "d.dept_id"),
                 DataColumn.of("userName", "u.user_id")
