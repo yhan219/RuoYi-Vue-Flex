@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.update.UpdateChain;
-import com.mybatisflex.core.update.UpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.constant.CacheNames;
@@ -99,7 +98,7 @@ public class SysOssConfigServiceImpl implements ISysOssConfigService {
     public Boolean insertByBo(SysOssConfigBo bo) {
         SysOssConfig config = MapstructUtils.convert(bo, SysOssConfig.class);
         validEntityBeforeSave(config);
-        boolean flag = baseMapper.insert(config,true) > 0;
+        boolean flag = baseMapper.insert(config, true) > 0;
         if (flag) {
             // 从数据库查询完整的数据做缓存
             config = baseMapper.selectOneById(config.getOssConfigId());
@@ -112,13 +111,7 @@ public class SysOssConfigServiceImpl implements ISysOssConfigService {
     public Boolean updateByBo(SysOssConfigBo bo) {
         SysOssConfig config = MapstructUtils.convert(bo, SysOssConfig.class);
         validEntityBeforeSave(config);
-        boolean update = UpdateChain.of(SysOssConfig.class)
-            .set(SysOssConfig::getPrefix, "", ObjectUtil.isNull(config.getPrefix()))
-            .set(SysOssConfig::getRegion, "", ObjectUtil.isNull(config.getRegion()))
-            .set(SysOssConfig::getExt1, "", ObjectUtil.isNull(config.getExt1()))
-            .set(SysOssConfig::getRemark, "", ObjectUtil.isNull(config.getRemark()))
-            .where(SysOssConfig::getOssConfigId).eq(config.getOssConfigId())
-            .update();
+        boolean update = baseMapper.update(config, false) != 0;
 
         if (update) {
             // 从数据库查询完整的数据做缓存
@@ -179,10 +172,11 @@ public class SysOssConfigServiceImpl implements ISysOssConfigService {
     @Transactional(rollbackFor = Exception.class)
     public int updateOssConfigStatus(SysOssConfigBo bo) {
         SysOssConfig sysOssConfig = MapstructUtils.convert(bo, SysOssConfig.class);
-//        todo
-        int row = baseMapper.update(UpdateWrapper.of(SysOssConfig.class).set(SysOssConfig::getStatus, "1").toEntity());
-        row += baseMapper.update(sysOssConfig);
-        if (row > 0) {
+        boolean updateOldStatus = UpdateChain.of(SysOssConfig.class).set(SysOssConfig::getStatus, "1")
+            .where(SysOssConfig::getStatus).eq("0")
+            .update();
+        int row = baseMapper.update(sysOssConfig);
+        if (updateOldStatus || row > 0) {
             RedisUtils.setCacheObject(OssConstant.DEFAULT_CONFIG_KEY, sysOssConfig.getConfigKey());
         }
         return row;
