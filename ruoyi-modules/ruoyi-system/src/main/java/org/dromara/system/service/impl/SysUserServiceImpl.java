@@ -39,7 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 
-import static com.mybatisflex.core.query.QueryMethods.column;
 import static com.mybatisflex.core.query.QueryMethods.distinct;
 import static org.dromara.system.domain.table.SysDeptTableDef.SYS_DEPT;
 import static org.dromara.system.domain.table.SysRoleTableDef.SYS_ROLE;
@@ -65,19 +64,8 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
 
     @Override
     public TableDataInfo<SysUserVo> selectPageUserList(SysUserBo user, PageQuery pageQuery) {
-        Page<SysUserVo> page = selectPageUserList(pageQuery, this.buildQueryWrapper(user));
+        Page<SysUserVo> page = baseMapper.selectPageUserList(pageQuery, this.buildQueryWrapper(user));
         return TableDataInfo.build(page);
-    }
-
-    private Page<SysUserVo> selectPageUserList(PageQuery pageQuery, QueryWrapper queryWrapper) {
-        queryWrapper
-            .select(SYS_USER.USER_ID, SYS_USER.DEPT_ID, SYS_USER.USER_NAME, SYS_USER.NICK_NAME, SYS_USER.EMAIL, SYS_USER.AVATAR, SYS_USER.PHONENUMBER, SYS_USER.SEX, SYS_USER.STATUS,
-                SYS_USER.DEL_FLAG, SYS_USER.LOGIN_IP, SYS_USER.LOGIN_DATE, SYS_USER.CREATE_BY, SYS_USER.CREATE_TIME, SYS_USER.REMARK,
-                SYS_DEPT.DEPT_NAME, SYS_DEPT.LEADER, column("u1.user_name as leaderName")
-            )
-            .leftJoin(SYS_DEPT).as("d").on(SYS_USER.DEPT_ID.eq(SYS_DEPT.DEPT_ID))
-            .leftJoin(SYS_USER).as("u1").on(SYS_USER.USER_ID.eq(SYS_DEPT.LEADER));
-        return baseMapper.selectPageUserList(pageQuery, queryWrapper);
     }
 
     /**
