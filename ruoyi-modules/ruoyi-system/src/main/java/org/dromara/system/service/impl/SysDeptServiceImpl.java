@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.dromara.system.domain.table.SysDeptTableDef.SYS_DEPT;
+import static org.dromara.system.domain.table.SysUserTableDef.SYS_USER;
 
 /**
  * 部门管理 服务实现
@@ -191,7 +192,7 @@ public class SysDeptServiceImpl implements ISysDeptService, DeptService {
      */
     @Override
     public boolean checkDeptExistUser(Long deptId) {
-        return userMapper.selectCountByQuery(QueryWrapper.create().from(SYS_DEPT).where(SYS_DEPT.DEPT_ID.eq(deptId))) > 0;
+        return userMapper.selectCountByQuery(QueryWrapper.create().from(SYS_USER).where(SYS_USER.DEPT_ID.eq(deptId))) > 0;
     }
 
     /**
