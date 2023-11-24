@@ -3,20 +3,15 @@ package org.dromara.system.mapper;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.update.UpdateChain;
-import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.mybatis.annotation.DataColumn;
 import org.dromara.common.mybatis.annotation.DataPermission;
 import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.system.domain.SysUser;
-import org.dromara.system.domain.dto.SysUserDto;
 import org.dromara.system.domain.vo.SysUserVo;
 
 import java.util.List;
 
-import static org.dromara.system.domain.table.SysDeptTableDef.SYS_DEPT;
-import static org.dromara.system.domain.table.SysRoleTableDef.SYS_ROLE;
-import static org.dromara.system.domain.table.SysUserRoleTableDef.SYS_USER_ROLE;
 import static org.dromara.system.domain.table.SysUserTableDef.SYS_USER;
 
 /**
@@ -27,24 +22,11 @@ import static org.dromara.system.domain.table.SysUserTableDef.SYS_USER;
 public interface SysUserMapper extends BaseMapperPlus<SysUser> {
 
     default Page<SysUserVo> selectPageUserList(PageQuery pageQuery, QueryWrapper queryWrapper) {
-        selectListVo(queryWrapper);
-        Page<SysUserDto> sysUserDtoPage = this.paginateAs(pageQuery, queryWrapper, SysUserDto.class, DataPermission.of(
-                DataColumn.of("deptName", "d.dept_id"),
+        return this.paginateWithRelationsAs(pageQuery, queryWrapper, SysUserVo.class, DataPermission.of(
+                DataColumn.of("deptName", "u.dept_id"),
                 DataColumn.of("userName", "u.user_id")
             )
         );
-        Page<SysUserVo> p = Page.of(pageQuery.getPageNum(), pageQuery.getPageSize(), sysUserDtoPage.getTotalRow());
-        List<SysUserVo> records = MapstructUtils.convert(sysUserDtoPage.getRecords(), SysUserVo.class);
-        p.setRecords(records);
-        return p;
-    }
-
-    default void selectListVo(QueryWrapper queryWrapper) {
-        queryWrapper.select(SYS_USER.USER_ID, SYS_USER.DEPT_ID, SYS_USER.NICK_NAME, SYS_USER.USER_NAME, SYS_USER.EMAIL, SYS_USER.AVATAR, SYS_USER.PHONENUMBER, SYS_USER.SEX,
-                SYS_USER.STATUS, SYS_USER.DEL_FLAG, SYS_USER.LOGIN_IP, SYS_USER.LOGIN_DATE, SYS_USER.CREATE_BY, SYS_USER.CREATE_TIME, SYS_USER.REMARK,
-                SYS_DEPT.DEPT_NAME, SYS_DEPT.LEADER, SYS_USER.USER_NAME.as("leaderName"))
-            .leftJoin(SYS_DEPT).as("d").on(SYS_USER.DEPT_ID.eq(SYS_DEPT.DEPT_ID))
-            .leftJoin(SYS_USER).as("u1").on(SYS_USER.USER_ID.eq(SYS_DEPT.LEADER));
     }
 
     /**
@@ -56,13 +38,11 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
 
 
     default List<SysUserVo> selectUserList(QueryWrapper queryWrapper) {
-        selectListVo(queryWrapper);
-        List<SysUserDto> sysUserDtos = this.selectListByQueryAs(queryWrapper, SysUserDto.class, DataPermission.of(
-                DataColumn.of("deptName", "d.dept_id"),
+        return this.selectListWithRelationsByQueryAs(queryWrapper, SysUserVo.class, DataPermission.of(
+                DataColumn.of("deptName", "u.dept_id"),
                 DataColumn.of("userName", "u.user_id")
             )
         );
-        return MapstructUtils.convert(sysUserDtos, SysUserVo.class);
     }
 
     /**
@@ -72,24 +52,8 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
      * @return 用户信息集合信息
      */
     default Page<SysUserVo> selectAllocatedList(PageQuery page, QueryWrapper queryWrapper) {
-        Page<SysUserDto> sysUserDtoPage = this.paginateAs(page, queryWrapper, SysUserDto.class, DataPermission.of(DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "u.user_id")));
-        Page<SysUserVo> p = Page.of(page.getPageNum(), page.getPageSize(), sysUserDtoPage.getTotalRow());
-        List<SysUserVo> records = MapstructUtils.convert(sysUserDtoPage.getRecords(), SysUserVo.class);
-        p.setRecords(records);
-        return p;
+        return this.paginateAs(page, queryWrapper, SysUserVo.class, DataPermission.of(DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "u.user_id")));
     }
-
-    private static void selectUserVo(QueryWrapper queryWrapper) {
-        queryWrapper.select(SYS_USER.USER_ID, SYS_USER.TENANT_ID, SYS_USER.DEPT_ID, SYS_USER.USER_NAME, SYS_USER.NICK_NAME, SYS_USER.USER_TYPE, SYS_USER.EMAIL, SYS_USER.AVATAR, SYS_USER.PHONENUMBER, SYS_USER.PASSWORD, SYS_USER.SEX, SYS_USER.STATUS, SYS_USER.DEL_FLAG,
-                SYS_USER.LOGIN_IP, SYS_USER.LOGIN_DATE, SYS_USER.CREATE_BY, SYS_USER.CREATE_TIME, SYS_USER.REMARK, SYS_DEPT.DEPT_ID, SYS_DEPT.PARENT_ID, SYS_DEPT.ANCESTORS, SYS_DEPT.DEPT_NAME, SYS_DEPT.ORDER_NUM, SYS_DEPT.LEADER, SYS_DEPT.STATUS,
-                SYS_ROLE.ROLE_ID, SYS_ROLE.ROLE_NAME, SYS_ROLE.ROLE_KEY, SYS_ROLE.ROLE_SORT, SYS_ROLE.DATA_SCOPE, SYS_ROLE.STATUS
-            ).from(SYS_USER).as("u")
-            .leftJoin(SYS_DEPT).as("d").on(SYS_USER.DEPT_ID.eq(SYS_DEPT.DEPT_ID))
-            .leftJoin(SYS_USER_ROLE).as("sur").on(SYS_USER.USER_ID.eq(SYS_USER_ROLE.USER_ID))
-            .leftJoin(SYS_ROLE).as("r").on(SYS_ROLE.ROLE_ID.eq(SYS_USER_ROLE.ROLE_ID));
-    }
-
-
 
 
     /**
@@ -100,9 +64,7 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
      */
     default SysUserVo selectUserByUserName(String userName) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.USER_NAME.eq(userName));
-        selectUserVo(queryWrapper);
-        SysUserDto sysUserDto = selectOneByQueryAs(queryWrapper, SysUserDto.class);
-        return MapstructUtils.convert(sysUserDto, SysUserVo.class);
+        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
     }
 
     /**
@@ -113,9 +75,7 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
      */
     default SysUserVo selectUserByPhonenumber(String phonenumber) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.PHONENUMBER.eq(phonenumber));
-        selectUserVo(queryWrapper);
-        SysUserDto sysUserDto = selectOneByQueryAs(queryWrapper, SysUserDto.class);
-        return MapstructUtils.convert(sysUserDto, SysUserVo.class);
+        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
     }
 
     /**
@@ -124,11 +84,9 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
      * @param email 邮箱
      * @return 用户对象信息
      */
-    default SysUserVo selectUserByEmail(String email){
+    default SysUserVo selectUserByEmail(String email) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.EMAIL.eq(email));
-        selectUserVo(queryWrapper);
-        SysUserDto sysUserDto = selectOneByQueryAs(queryWrapper, SysUserDto.class);
-        return MapstructUtils.convert(sysUserDto, SysUserVo.class);
+        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
     }
 
     /**
@@ -138,11 +96,9 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
      * @param tenantId 租户id
      * @return 用户对象信息
      */
-    default SysUserVo selectTenantUserByUserName(String userName,String tenantId) {
+    default SysUserVo selectTenantUserByUserName(String userName, String tenantId) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.USER_NAME.eq(userName)).and(SYS_USER.TENANT_ID.eq(tenantId));
-        selectUserVo(queryWrapper);
-        SysUserDto sysUserDto = selectOneByQueryAs(queryWrapper, SysUserDto.class);
-        return MapstructUtils.convert(sysUserDto, SysUserVo.class);
+        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
     }
 
     /**
@@ -154,9 +110,7 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
      */
     default SysUserVo selectTenantUserByPhonenumber(String phonenumber, String tenantId) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.PHONENUMBER.eq(phonenumber)).and(SYS_USER.TENANT_ID.eq(tenantId));
-        selectUserVo(queryWrapper);
-        SysUserDto sysUserDto = selectOneByQueryAs(queryWrapper, SysUserDto.class);
-        return MapstructUtils.convert(sysUserDto, SysUserVo.class);
+        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
     }
 
     /**
@@ -166,11 +120,9 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
      * @param tenantId 租户id
      * @return 用户对象信息
      */
-    default SysUserVo selectTenantUserByEmail(String email,  String tenantId) {
+    default SysUserVo selectTenantUserByEmail(String email, String tenantId) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.EMAIL.eq(email)).and(SYS_USER.TENANT_ID.eq(tenantId));
-        selectUserVo(queryWrapper);
-        SysUserDto sysUserDto = selectOneByQueryAs(queryWrapper, SysUserDto.class);
-        return MapstructUtils.convert(sysUserDto, SysUserVo.class);
+        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
     }
 
 
@@ -183,9 +135,7 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
 
     default SysUserVo selectUserById(Long userId) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SysUser::getUserId).eq(userId);
-        selectUserVo(queryWrapper);
-        SysUserDto sysUserDto = selectOneByQueryAs(queryWrapper, SysUserDto.class, DataPermission.of(DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "u.user_id")));
-        return MapstructUtils.convert(sysUserDto, SysUserVo.class);
+        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class, DataPermission.of(DataColumn.of("deptName", "dept_id"), DataColumn.of("userName", "user_id")));
     }
 
 

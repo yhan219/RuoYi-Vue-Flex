@@ -2,6 +2,8 @@ package org.dromara.system.domain.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mybatisflex.annotation.RelationManyToMany;
+import com.mybatisflex.annotation.RelationOneToOne;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 import org.dromara.common.sensitive.annotation.Sensitive;
@@ -116,11 +118,13 @@ public class SysUserVo implements Serializable {
     /**
      * 部门对象
      */
+    @RelationOneToOne(selfField = "deptId", joinSelfColumn = "dept_id", targetField = "deptId", joinTargetColumn = "dept_id", targetTable = "sys_dept")
     private SysDeptVo dept;
 
     /**
      * 角色对象
      */
+    @RelationManyToMany(selfField = "userId", joinSelfColumn = "user_id", targetTable = "sys_role", targetField = "roleId", joinTargetColumn = "role_id", joinTable = "sys_user_role")
     private List<SysRoleVo> roles;
 
     /**

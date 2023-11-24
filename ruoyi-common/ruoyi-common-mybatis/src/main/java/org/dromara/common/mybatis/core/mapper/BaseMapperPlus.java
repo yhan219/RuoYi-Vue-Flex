@@ -48,12 +48,28 @@ public interface BaseMapperPlus<T> extends BaseMapper<T> {
         return this.paginateAs(pageQuery.build(), queryWrapper, asType);
     }
 
+    default <V> Page<V> paginateWithRelationsAs(PageQuery pageQuery, QueryWrapper queryWrapper, Class<V> asType, DataPermission dataPermission) {
+        dataPermission.handler(queryWrapper);
+        return this.paginateWithRelationsAs(pageQuery.build(), queryWrapper, asType);
+    }
+
+
 
     default <V> List<V> selectListByQueryAs(QueryWrapper queryWrapper, Class<V> asType, DataPermission dataPermission) {
         dataPermission.handler(queryWrapper);
         return this.selectListByQueryAs(queryWrapper, asType);
     }
 
+    default <V> List<V> selectListWithRelationsByQueryAs(QueryWrapper queryWrapper, Class<V> asType, DataPermission dataPermission) {
+        dataPermission.handler(queryWrapper);
+        return this.selectListWithRelationsByQueryAs(queryWrapper, asType);
+    }
+
+
+    default <V> List<V> selectObjectListByQueryAs(QueryWrapper queryWrapper, Class<V> asType, DataPermission dataPermission) {
+        dataPermission.handler(queryWrapper);
+        return this.selectObjectListByQueryAs(queryWrapper, asType);
+    }
 
 
     default <V> Page<V> paginateAs(PageQuery pageQuery, QueryWrapper queryWrapper, Class<V> asType) {

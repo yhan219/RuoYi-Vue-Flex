@@ -2,11 +2,12 @@ package org.dromara.system.domain.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.mybatisflex.annotation.RelationOneToOne;
+import io.github.linpeilie.annotations.AutoMapper;
+import lombok.Data;
 import org.dromara.common.excel.annotation.ExcelDictFormat;
 import org.dromara.common.excel.convert.ExcelDictConvert;
 import org.dromara.system.domain.SysDept;
-import io.github.linpeilie.annotations.AutoMapper;
-import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -66,6 +67,7 @@ public class SysDeptVo implements Serializable {
      * 负责人
      */
     @ExcelProperty(value = "负责人")
+    @RelationOneToOne(valueField = "userName", selfField = "leader", joinSelfColumn = "leader", targetField = "userId", joinTargetColumn = "user_id", targetTable = "sys_user")
     private String leaderName;
 
     /**
