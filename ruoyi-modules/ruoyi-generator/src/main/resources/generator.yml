@@ -8,3 +8,5 @@ gen:
   autoRemovePre: false
   # 表前缀（生成类名不会包含表前缀，多个用逗号分隔）
   tablePrefix: sys_
+  # 使用的模版 默认是vben，原生的是vue
+  platform: vben

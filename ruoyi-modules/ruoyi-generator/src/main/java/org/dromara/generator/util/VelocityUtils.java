@@ -3,16 +3,17 @@ package org.dromara.generator.util;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Dict;
-import org.dromara.generator.constant.GenConstants;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.apache.velocity.VelocityContext;
 import org.dromara.common.core.utils.DateUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.helper.DataBaseHelper;
+import org.dromara.generator.config.GenConfig;
+import org.dromara.generator.constant.GenConstants;
 import org.dromara.generator.domain.GenTable;
 import org.dromara.generator.domain.GenTableColumn;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import org.apache.velocity.VelocityContext;
 
 import java.util.*;
 
@@ -127,13 +128,27 @@ public class VelocityUtils {
         } else {
             templates.add("vm/sql/sql.vm");
         }
-        templates.add("vm/ts/api.ts.vm");
-        templates.add("vm/ts/types.ts.vm");
-        if (GenConstants.TPL_CRUD.equals(tplCategory)) {
-            templates.add("vm/vue/index.vue.vm");
-        } else if (GenConstants.TPL_TREE.equals(tplCategory)) {
-            templates.add("vm/vue/index-tree.vue.vm");
+
+        if (StringUtils.equals("vben", GenConfig.getPlatform())) {
+            /**
+             * 添加vben
+             */
+            templates.add("vm/vben/api/index.ts.vm");
+            templates.add("vm/vben/api/model.ts.vm");
+            templates.add("vm/vben/views/data.ts.vm");
+            templates.add("vm/vben/views/index.vue.vm");
+            templates.add("vm/vben/views/modal.vue.vm");
+        } else {
+            templates.add("vm/ts/api.ts.vm");
+            templates.add("vm/ts/types.ts.vm");
+            if (GenConstants.TPL_CRUD.equals(tplCategory)) {
+                templates.add("vm/vue/index.vue.vm");
+            } else if (GenConstants.TPL_TREE.equals(tplCategory)) {
+                templates.add("vm/vue/index-tree.vue.vm");
+            }
         }
+
+
         return templates;
     }
 
@@ -186,6 +201,28 @@ public class VelocityUtils {
         } else if (template.contains("index-tree.vue.vm")) {
             fileName = StringUtils.format("{}/views/{}/{}/index.vue", vuePath, moduleName, businessName);
         }
+
+        String vbenPath = "vben";
+        String BusinessName = StringUtils.capitalize(genTable.getBusinessName());
+        /**
+         * 添加vben
+         */
+        if (template.contains("index.ts.vm")) {
+            fileName = StringUtils.format("{}/api/{}/{}/index.ts", vbenPath, moduleName, businessName);
+        }
+        if (template.contains("model.ts.vm")) {
+            fileName = StringUtils.format("{}/api/{}/{}/model.ts", vbenPath, moduleName, businessName);
+        }
+        if (template.contains("index.vue.vm")) {
+            fileName = StringUtils.format("{}/views/{}/{}/index.vue", vbenPath, moduleName, businessName);
+        }
+        if (template.contains("data.ts.vm")) {
+            fileName = StringUtils.format("{}/views/{}/{}/{}.data.ts", vbenPath, moduleName, businessName, businessName);
+        }
+        if (template.contains("modal.vue.vm")) {
+            fileName = StringUtils.format("{}/views/{}/{}/{}Modal.vue", vbenPath, moduleName, businessName, BusinessName);
+        }
+
         return fileName;
     }
 

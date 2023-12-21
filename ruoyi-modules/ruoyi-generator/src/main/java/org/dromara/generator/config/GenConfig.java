@@ -35,6 +35,11 @@ public class GenConfig {
      */
     public static String tablePrefix;
 
+    /**
+     * 使用平台
+     */
+    public static String platform;
+
     public static String getAuthor() {
         return author;
     }
@@ -69,5 +74,14 @@ public class GenConfig {
     @Value("${tablePrefix}")
     public void setTablePrefix(String tablePrefix) {
         GenConfig.tablePrefix = tablePrefix;
+    }
+
+    @Value("${platform}")
+    public void setPlatform(String platform) {
+        GenConfig.platform = platform;
+    }
+
+    public static String getPlatform() {
+        return platform;
     }
 }
