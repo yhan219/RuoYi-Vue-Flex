@@ -26,7 +26,6 @@
             <artifactId>ruoyi-common-satoken</artifactId>
         </dependency>
 
-
         <dependency>
             <groupId>com.mybatis-flex</groupId>
             <artifactId>mybatis-flex-spring-boot-starter</artifactId>

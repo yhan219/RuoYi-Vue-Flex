@@ -5,6 +5,7 @@ import com.mybatisflex.annotation.Table;
 import org.dromara.common.tenant.core.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.dromara.common.mybatis.core.domain.BaseEntity;
 
 /**
  * 对象存储配置对象 sys_oss_config
@@ -14,7 +15,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("sys_oss_config")
-public class SysOssConfig extends TenantEntity {
+public class SysOssConfig extends BaseEntity {
 
     /**
      * 主建

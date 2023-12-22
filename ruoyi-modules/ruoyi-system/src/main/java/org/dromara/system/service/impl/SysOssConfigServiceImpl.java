@@ -5,12 +5,12 @@ import cn.hutool.core.util.ObjectUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.update.UpdateChain;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.constant.CacheNames;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
-import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import static org.dromara.system.domain.table.SysOssConfigTableDef.SYS_OSS_CONFIG;
 
@@ -52,6 +51,17 @@ public class SysOssConfigServiceImpl implements ISysOssConfigService {
      */
     @Override
     public void init() {
+        List<SysOssConfig> list = baseMapper.selectList();
+        // 加载OSS初始化配置
+        for (SysOssConfig config : list) {
+            String configKey = config.getConfigKey();
+            if ("0".equals(config.getStatus())) {
+                RedisUtils.setCacheObject(OssConstant.DEFAULT_CONFIG_KEY, configKey);
+            }
+            CacheUtils.put(CacheNames.SYS_OSS_CONFIG, config.getConfigKey(), JsonUtils.toJsonString(config));
+        }
+
+        // todo
         List<SysOssConfig> list = TenantHelper.ignore(() ->
             baseMapper.selectListByQuery(QueryWrapper.create().from(SYS_OSS_CONFIG).orderBy(SYS_OSS_CONFIG.TENANT_ID, true)));
 

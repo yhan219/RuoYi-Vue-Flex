@@ -101,8 +101,11 @@ public class SysSocialServiceImpl implements ISysSocialService {
      * @return 授权信息
      */
     @Override
-    public SysSocialVo selectByAuthId(String authId) {
-        return baseMapper.selectOneByQueryAs(QueryWrapper.create().from(SYS_SOCIAL).where(SYS_SOCIAL.AUTH_ID.eq(authId)),SysSocialVo.class);
+    public List<SysSocialVo> selectByAuthId(String authId) {
+        return baseMapper.selectVoList(new LambdaQueryWrapper<SysSocial>().eq(SysSocial::getAuthId, authId));
+        // todo
+//    public SysSocialVo selectByAuthId(String authId) {
+//        return baseMapper.selectOneByQueryAs(QueryWrapper.create().from(SYS_SOCIAL).where(SYS_SOCIAL.AUTH_ID.eq(authId)),SysSocialVo.class);
     }
 
 }

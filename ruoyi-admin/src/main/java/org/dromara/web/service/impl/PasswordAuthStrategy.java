@@ -81,9 +81,6 @@ public class PasswordAuthStrategy implements IAuthStrategy {
         // 生成token
         LoginHelper.login(loginUser, model);
 
-        loginService.recordLogininfor(loginUser.getTenantId(), username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success"));
-        loginService.recordLoginInfo(user.getUserId());
-
         LoginVo loginVo = new LoginVo();
         loginVo.setAccessToken(StpUtil.getTokenValue());
         loginVo.setExpireIn(StpUtil.getTokenTimeout());
@@ -129,7 +126,21 @@ public class PasswordAuthStrategy implements IAuthStrategy {
         if (TenantHelper.isEnable()) {
             return userMapper.selectTenantUserByUserName(username, tenantId);
         }
+        // todo
         return userMapper.selectUserByUserName(username);
+        return TenantHelper.dynamic(tenantId, () -> {
+            SysUser user = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
+                .select(SysUser::getUserName, SysUser::getStatus)
+                .eq(SysUser::getUserName, username));
+            if (ObjectUtil.isNull(user)) {
+                log.info("登录用户：{} 不存在.", username);
+                throw new UserException("user.not.exists", username);
+            } else if (UserStatus.DISABLE.getCode().equals(user.getStatus())) {
+                log.info("登录用户：{} 已被停用.", username);
+                throw new UserException("user.blocked", username);
+            }
+            return userMapper.selectUserByUserName(username);
+        });
     }
 
 }

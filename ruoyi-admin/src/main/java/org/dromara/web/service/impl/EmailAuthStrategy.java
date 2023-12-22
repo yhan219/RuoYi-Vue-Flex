@@ -71,9 +71,6 @@ public class EmailAuthStrategy implements IAuthStrategy {
         // 生成token
         LoginHelper.login(loginUser, model);
 
-        loginService.recordLogininfor(loginUser.getTenantId(), user.getUserName(), Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success"));
-        loginService.recordLoginInfo(user.getUserId());
-
         LoginVo loginVo = new LoginVo();
         loginVo.setAccessToken(StpUtil.getTokenValue());
         loginVo.setExpireIn(StpUtil.getTokenTimeout());
@@ -108,7 +105,22 @@ public class EmailAuthStrategy implements IAuthStrategy {
         if (TenantHelper.isEnable()) {
             return userMapper.selectTenantUserByEmail(email, tenantId);
         }
+
+        // todo
         return userMapper.selectUserByEmail(email);
+        return TenantHelper.dynamic(tenantId, () -> {
+            SysUser user = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
+                .select(SysUser::getEmail, SysUser::getStatus)
+                .eq(SysUser::getEmail, email));
+            if (ObjectUtil.isNull(user)) {
+                log.info("登录用户：{} 不存在.", email);
+                throw new UserException("user.not.exists", email);
+            } else if (UserStatus.DISABLE.getCode().equals(user.getStatus())) {
+                log.info("登录用户：{} 已被停用.", email);
+                throw new UserException("user.blocked", email);
+            }
+            return userMapper.selectUserByEmail(email);
+        });
     }
 
 }

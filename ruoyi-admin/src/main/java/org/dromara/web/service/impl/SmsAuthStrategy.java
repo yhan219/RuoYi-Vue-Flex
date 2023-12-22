@@ -71,9 +71,6 @@ public class SmsAuthStrategy implements IAuthStrategy {
         // 生成token
         LoginHelper.login(loginUser, model);
 
-        loginService.recordLogininfor(loginUser.getTenantId(), user.getUserName(), Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success"));
-        loginService.recordLoginInfo(user.getUserId());
-
         LoginVo loginVo = new LoginVo();
         loginVo.setAccessToken(StpUtil.getTokenValue());
         loginVo.setExpireIn(StpUtil.getTokenTimeout());
@@ -109,7 +106,22 @@ public class SmsAuthStrategy implements IAuthStrategy {
         if (TenantHelper.isEnable()) {
             return userMapper.selectTenantUserByPhonenumber(phonenumber, tenantId);
         }
+
+        //todo
         return userMapper.selectUserByPhonenumber(phonenumber);
+        return TenantHelper.dynamic(tenantId, () -> {
+            SysUser user = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
+                .select(SysUser::getPhonenumber, SysUser::getStatus)
+                .eq(SysUser::getPhonenumber, phonenumber));
+            if (ObjectUtil.isNull(user)) {
+                log.info("登录用户：{} 不存在.", phonenumber);
+                throw new UserException("user.not.exists", phonenumber);
+            } else if (UserStatus.DISABLE.getCode().equals(user.getStatus())) {
+                log.info("登录用户：{} 已被停用.", phonenumber);
+                throw new UserException("user.blocked", phonenumber);
+            }
+            return userMapper.selectUserByPhonenumber(phonenumber);
+        });
     }
 
 }

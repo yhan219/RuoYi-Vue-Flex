@@ -90,43 +90,6 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
     }
 
     /**
-     * 通过用户名查询用户(不走租户插件)
-     *
-     * @param userName 用户名
-     * @param tenantId 租户id
-     * @return 用户对象信息
-     */
-    default SysUserVo selectTenantUserByUserName(String userName, String tenantId) {
-        QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.USER_NAME.eq(userName)).and(SYS_USER.TENANT_ID.eq(tenantId));
-        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
-    }
-
-    /**
-     * 通过手机号查询用户(不走租户插件)
-     *
-     * @param phonenumber 手机号
-     * @param tenantId    租户id
-     * @return 用户对象信息
-     */
-    default SysUserVo selectTenantUserByPhonenumber(String phonenumber, String tenantId) {
-        QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.PHONENUMBER.eq(phonenumber)).and(SYS_USER.TENANT_ID.eq(tenantId));
-        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
-    }
-
-    /**
-     * 通过邮箱查询用户(不走租户插件)
-     *
-     * @param email    邮箱
-     * @param tenantId 租户id
-     * @return 用户对象信息
-     */
-    default SysUserVo selectTenantUserByEmail(String email, String tenantId) {
-        QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.EMAIL.eq(email)).and(SYS_USER.TENANT_ID.eq(tenantId));
-        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
-    }
-
-
-    /**
      * 通过用户ID查询用户
      *
      * @param userId 用户ID

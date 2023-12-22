@@ -3,6 +3,8 @@ package org.dromara.web.service;
 import cn.dev33.satoken.secure.BCrypt;
 import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
+import cn.hutool.core.util.ObjectUtil;
+import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.Constants;
 import org.dromara.common.core.constant.GlobalConstants;
 import org.dromara.common.core.domain.model.RegisterBody;
@@ -59,6 +61,12 @@ public class SysRegisterService {
         sysUser.setPassword(BCrypt.hashpw(password));
         sysUser.setUserType(userType);
 
+        boolean exist = TenantHelper.dynamic(tenantId, () -> {
+            return userMapper.exists(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getUserName, sysUser.getUserName())
+                .ne(ObjectUtil.isNotNull(sysUser.getUserId()), SysUser::getUserId, sysUser.getUserId()));
+        });
+        //todo
         boolean exist = userMapper.selectCountByQuery(QueryWrapper.create()
             .from(SYS_USER)
             .where(SYS_USER.TENANT_ID.eq(tenantId, TenantHelper.isEnable()))
