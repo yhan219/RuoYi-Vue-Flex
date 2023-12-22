@@ -1,12 +1,31 @@
+<img src="https://raw.githubusercontent.com/yhan219/blog-image/master/yhan/logo.png" width="30%" height="30%">
+<div style="height: 10px; clear: both;"></div>
+
+---
+
 # 简介
+
+[![码云Gitee](https://gitee.com/yhan219/ruoyi-vue-flex/badge/star.svg?theme=blue)](https://gitee.com/yhan219/ruoyi-vue-flex)
+[![GitHub](https://img.shields.io/github/stars/yhan219/ruoyi-vue-flex.svg?style=social&label=Stars)](https://github.com/yhan219/ruoyi-vue-flex)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://gitee.com/yhan219/ruoyi-vue-flex/blob/mybatis-flex/LICENSE)
+<br>
+[![ruoyi-vue-flex](https://img.shields.io/badge/ruoyi_vue_flex-5.1.2-success.svg)](https://gitee.com/yhan219/ruoyi-vue-flex)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1-blue.svg)]()
+[![JDK-17](https://img.shields.io/badge/JDK-17-green.svg)]()
+[![JDK-21](https://img.shields.io/badge/JDK-21-green.svg)]()
+
+
 ruoyi-vue-flex是基于[ruoyi-vue-plus 5.X](https://gitee.com/dromara/RuoYi-Vue-Plus/tree/5.X/)分支的一个快速开发框架。
 
+RuoYi-Vue-Plus 是重写 RuoYi-Vue 针对 `分布式集群与多租户` 场景全方位升级(不兼容原框架)
 将ruoyi-vue-plus中使用的mybatis-plus替换为mybatis-flex,并根据两个ORM框架使用的不同修改了部分逻辑。底层完全重写。
 
-ruoyi-vue-flex与ruoyi-vue-plus功能完全相同。
+**ruoyi-vue-flex与ruoyi-vue-plus功能完全相同。**
 
 ruoyi-vue-flex将定期同步ruoyi-vue-plus，非冲突功能每天升级，冲突功能最迟不超过一周完成升级。
 
+# 版本
+与ruoyi-vue-plus保持一致，当前版本`5.1.2`
 
 # 与ruoyi-vue-plus的差异
 ## 前端框架差异
@@ -53,6 +72,13 @@ gen:
 // mapper中删除InterceptorIgnore注解，在service中手动忽略
 TenantHelper.ignore(() -> baseMapper.selectTenantUserByUserName(userName, tenantId));
 ```
+
+## 特别鸣谢
+[ruoyi-vue-plus](https://gitee.com/dromara/RuoYi-Vue-Plus/tree/5.X/)
+
+[mybatis-flex](https://gitee.com/yhan219/mybatis-flex)
+
+[ruoyi-plus-vben](https://gitee.com/dapppp/ruoyi-plus-vben)
 
 ## 预览图
 

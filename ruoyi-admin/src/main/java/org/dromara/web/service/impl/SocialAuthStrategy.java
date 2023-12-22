@@ -115,27 +115,11 @@ public class SocialAuthStrategy implements IAuthStrategy {
     }
 
     private SysUserVo loadUser(String tenantId, Long userId) {
-        SysUser user = userMapper.selectOneByQuery(
-            QueryWrapper.create().from(SYS_USER)
-                .select(SYS_USER.USER_NAME, SYS_USER.STATUS)
-                .where(SYS_USER.TENANT_ID.eq(tenantId, TenantHelper.isEnable()))
-                .and(SYS_USER.USER_ID.eq(userId)));
-        if (ObjectUtil.isNull(user)) {
-            log.info("登录用户：{} 不存在.", "");
-            throw new UserException("user.not.exists", "");
-        } else if (UserStatus.DISABLE.getCode().equals(user.getStatus())) {
-            log.info("登录用户：{} 已被停用.", "");
-            throw new UserException("user.blocked", "");
-        }
-        if (TenantHelper.isEnable()) {
-            return userMapper.selectTenantUserByUserName(user.getUserName(), tenantId);
-        }
-        //todo
-        return userMapper.selectUserByUserName(user.getUserName());
-        return TenantHelper.dynamic(tenantId, () -> {
-            SysUser user = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-                .select(SysUser::getUserName, SysUser::getStatus)
-                .eq(SysUser::getUserId, userId));
+       return TenantHelper.dynamic(tenantId, () -> {
+            SysUser user = userMapper.selectOneByQuery(
+                QueryWrapper.create().from(SYS_USER)
+                    .select(SYS_USER.USER_NAME, SYS_USER.STATUS)
+                    .and(SYS_USER.USER_ID.eq(userId)));
             if (ObjectUtil.isNull(user)) {
                 log.info("登录用户：{} 不存在.", "");
                 throw new UserException("user.not.exists", "");

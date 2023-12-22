@@ -91,27 +91,10 @@ public class EmailAuthStrategy implements IAuthStrategy {
     }
 
     private SysUserVo loadUserByEmail(String tenantId, String email) {
-        SysUser user = userMapper.selectOneByQuery(QueryWrapper.create().from(SYS_USER)
-            .select(SYS_USER.EMAIL, SYS_USER.STATUS)
-            .where(SYS_USER.TENANT_ID.eq(tenantId, TenantHelper.isEnable()))
-            .and(SYS_USER.EMAIL.eq(email)));
-        if (ObjectUtil.isNull(user)) {
-            log.info("登录用户：{} 不存在.", email);
-            throw new UserException("user.not.exists", email);
-        } else if (UserStatus.DISABLE.getCode().equals(user.getStatus())) {
-            log.info("登录用户：{} 已被停用.", email);
-            throw new UserException("user.blocked", email);
-        }
-        if (TenantHelper.isEnable()) {
-            return userMapper.selectTenantUserByEmail(email, tenantId);
-        }
-
-        // todo
-        return userMapper.selectUserByEmail(email);
         return TenantHelper.dynamic(tenantId, () -> {
-            SysUser user = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-                .select(SysUser::getEmail, SysUser::getStatus)
-                .eq(SysUser::getEmail, email));
+            SysUser user = userMapper.selectOneByQuery(QueryWrapper.create().from(SYS_USER)
+                .select(SYS_USER.EMAIL, SYS_USER.STATUS)
+                .and(SYS_USER.EMAIL.eq(email)));
             if (ObjectUtil.isNull(user)) {
                 log.info("登录用户：{} 不存在.", email);
                 throw new UserException("user.not.exists", email);

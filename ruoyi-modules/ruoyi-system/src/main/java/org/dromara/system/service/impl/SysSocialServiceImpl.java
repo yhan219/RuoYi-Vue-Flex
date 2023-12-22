@@ -32,7 +32,7 @@ public class SysSocialServiceImpl implements ISysSocialService {
      */
     @Override
     public SysSocialVo queryById(String id) {
-        return baseMapper.selectOneWithRelationsByIdAs(id,SysSocialVo.class);
+        return baseMapper.selectOneWithRelationsByIdAs(id, SysSocialVo.class);
     }
 
     /**
@@ -56,7 +56,7 @@ public class SysSocialServiceImpl implements ISysSocialService {
     public Boolean insertByBo(SysSocialBo bo) {
         SysSocial add = MapstructUtils.convert(bo, SysSocial.class);
         validEntityBeforeSave(add);
-        boolean flag = baseMapper.insert(add,true) > 0;
+        boolean flag = baseMapper.insert(add, true) > 0;
         if (flag) {
             if (add != null) {
                 bo.setId(add.getId());
@@ -102,10 +102,7 @@ public class SysSocialServiceImpl implements ISysSocialService {
      */
     @Override
     public List<SysSocialVo> selectByAuthId(String authId) {
-        return baseMapper.selectVoList(new LambdaQueryWrapper<SysSocial>().eq(SysSocial::getAuthId, authId));
-        // todo
-//    public SysSocialVo selectByAuthId(String authId) {
-//        return baseMapper.selectOneByQueryAs(QueryWrapper.create().from(SYS_SOCIAL).where(SYS_SOCIAL.AUTH_ID.eq(authId)),SysSocialVo.class);
+        return baseMapper.selectListByQueryAs(QueryWrapper.create().from(SYS_SOCIAL).where(SYS_SOCIAL.AUTH_ID.eq(authId)), SysSocialVo.class);
     }
 
 }

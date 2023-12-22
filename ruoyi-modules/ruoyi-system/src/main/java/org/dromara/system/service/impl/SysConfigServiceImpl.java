@@ -87,14 +87,8 @@ public class SysConfigServiceImpl implements ISysConfigService, ConfigService {
      */
     @Override
     public boolean selectRegisterEnabled(String tenantId) {
-        SysConfig retConfig = TenantHelper.dynamic(tenantId, () -> {
-            return baseMapper.selectOne(new LambdaQueryWrapper<SysConfig>()
-                .eq(SysConfig::getConfigKey, "sys.account.registerUser"));
-        });
-        // todo
-        SysConfig retConfig = baseMapper.selectOneByQuery(QueryWrapper.create().from(SYS_CONFIG)
-            .where(SYS_CONFIG.CONFIG_KEY.eq("sys.account.registerUser"))
-            .and(SYS_CONFIG.TENANT_ID.eq(tenantId, TenantHelper.isEnable())));
+        SysConfig retConfig = TenantHelper.dynamic(tenantId, () -> baseMapper.selectOneByQuery(QueryWrapper.create().from(SYS_CONFIG)
+            .where(SYS_CONFIG.CONFIG_KEY.eq("sys.account.registerUser"))));
         if (ObjectUtil.isNull(retConfig)) {
             return false;
         }

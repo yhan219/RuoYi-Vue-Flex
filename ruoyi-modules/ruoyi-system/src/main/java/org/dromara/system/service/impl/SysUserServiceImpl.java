@@ -553,8 +553,9 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
     @Override
     @Cacheable(cacheNames = CacheNames.SYS_NICKNAME, key = "#userId")
     public String selectNicknameById(Long userId) {
-        SysUser sysUser = baseMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-            .select(SysUser::getNickName).eq(SysUser::getUserId, userId));
+        SysUser sysUser = baseMapper.selectOneByQuery(QueryWrapper.create().from(SYS_USER)
+            .select(SYS_USER.NICK_NAME)
+            .where(SYS_USER.USER_ID.eq(userId)));
         return ObjectUtil.isNull(sysUser) ? null : sysUser.getNickName();
     }
 }

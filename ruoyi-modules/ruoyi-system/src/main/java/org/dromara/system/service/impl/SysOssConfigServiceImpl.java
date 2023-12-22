@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.update.UpdateChain;
-import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.constant.CacheNames;
@@ -18,7 +17,6 @@ import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.common.oss.constant.OssConstant;
 import org.dromara.common.redis.utils.CacheUtils;
 import org.dromara.common.redis.utils.RedisUtils;
-import org.dromara.common.tenant.helper.TenantHelper;
 import org.dromara.system.domain.SysOssConfig;
 import org.dromara.system.domain.bo.SysOssConfigBo;
 import org.dromara.system.domain.vo.SysOssConfigVo;
@@ -51,7 +49,7 @@ public class SysOssConfigServiceImpl implements ISysOssConfigService {
      */
     @Override
     public void init() {
-        List<SysOssConfig> list = baseMapper.selectList();
+        List<SysOssConfig> list = baseMapper.selectAll();
         // 加载OSS初始化配置
         for (SysOssConfig config : list) {
             String configKey = config.getConfigKey();
@@ -61,26 +59,6 @@ public class SysOssConfigServiceImpl implements ISysOssConfigService {
             CacheUtils.put(CacheNames.SYS_OSS_CONFIG, config.getConfigKey(), JsonUtils.toJsonString(config));
         }
 
-        // todo
-        List<SysOssConfig> list = TenantHelper.ignore(() ->
-            baseMapper.selectListByQuery(QueryWrapper.create().from(SYS_OSS_CONFIG).orderBy(SYS_OSS_CONFIG.TENANT_ID, true)));
-
-        Map<String, List<SysOssConfig>> map = StreamUtils.groupByKey(list, SysOssConfig::getTenantId);
-        try {
-            for (String tenantId : map.keySet()) {
-                TenantHelper.setDynamic(tenantId);
-                // 加载OSS初始化配置
-                for (SysOssConfig config : map.get(tenantId)) {
-                    String configKey = config.getConfigKey();
-                    if ("0".equals(config.getStatus())) {
-                        RedisUtils.setCacheObject(OssConstant.DEFAULT_CONFIG_KEY, configKey);
-                    }
-                    CacheUtils.put(CacheNames.SYS_OSS_CONFIG, config.getConfigKey(), JsonUtils.toJsonString(config));
-                }
-            }
-        } finally {
-            TenantHelper.clearDynamic();
-        }
     }
 
     @Override
