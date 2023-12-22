@@ -18,7 +18,8 @@
 ruoyi-vue-flex是基于[ruoyi-vue-plus 5.X](https://gitee.com/dromara/RuoYi-Vue-Plus/tree/5.X/)分支的一个快速开发框架。
 
 RuoYi-Vue-Plus 是重写 RuoYi-Vue 针对 `分布式集群与多租户` 场景全方位升级(不兼容原框架)
-将ruoyi-vue-plus中使用的mybatis-plus替换为mybatis-flex,并根据两个ORM框架使用的不同修改了部分逻辑。底层完全重写。
+
+ruoyi-vue-flex将ruoyi-vue-plus中使用的mybatis-plus替换为mybatis-flex,并根据两个ORM框架使用的不同修改了部分逻辑。底层完全重写。
 
 **ruoyi-vue-flex与ruoyi-vue-plus功能完全相同。**
 
