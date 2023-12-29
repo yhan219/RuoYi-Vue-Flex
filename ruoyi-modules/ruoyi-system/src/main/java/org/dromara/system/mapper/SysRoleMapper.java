@@ -5,7 +5,6 @@ import com.mybatisflex.core.query.QueryMethods;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.apache.ibatis.annotations.Param;
 import org.dromara.common.mybatis.annotation.DataColumn;
-import org.dromara.common.mybatis.annotation.DataPermission;
 import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.system.domain.SysRole;
@@ -27,11 +26,7 @@ public interface SysRoleMapper extends BaseMapperPlus<SysRole> {
 
     default Page<SysRoleVo> selectPageRoleList(@Param("pageQuery") PageQuery pageQuery, QueryWrapper queryWrapper){
         selectRoleVo(queryWrapper);
-        return paginateAs(pageQuery, queryWrapper, SysRoleVo.class, DataPermission.of(
-                DataColumn.of("deptName", "d.dept_id"),
-                DataColumn.of("userName", "r.create_by")
-            )
-        );
+        return paginateAs(pageQuery, queryWrapper, SysRoleVo.class, DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "r.create_by"));
     }
 
     /**
@@ -41,11 +36,7 @@ public interface SysRoleMapper extends BaseMapperPlus<SysRole> {
      */
     default List<SysRoleVo> selectRoleList(QueryWrapper queryWrapper) {
         selectRoleVo(queryWrapper);
-        return this.selectListByQueryAs(queryWrapper, SysRoleVo.class,DataPermission.of(
-                DataColumn.of("deptName", "d.dept_id"),
-                DataColumn.of("userName", "r.create_by")
-            )
-        );
+        return this.selectListByQueryAs(queryWrapper, SysRoleVo.class, DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "r.create_by"));
     }
 
     private static void selectRoleVo(QueryWrapper queryWrapper) {
@@ -62,11 +53,7 @@ public interface SysRoleMapper extends BaseMapperPlus<SysRole> {
     default SysRoleVo selectRoleById(@Param("roleId") Long roleId){
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_ROLE.ROLE_ID.eq(roleId));
         selectRoleVo(queryWrapper);
-        return selectOneByQueryAs(queryWrapper, SysRoleVo.class, DataPermission.of(
-                DataColumn.of("deptName", "d.dept_id"),
-                DataColumn.of("userName", "r.create_by")
-            )
-        );
+        return selectOneByQueryAs(queryWrapper, SysRoleVo.class, DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "r.create_by"));
     }
 
     /**

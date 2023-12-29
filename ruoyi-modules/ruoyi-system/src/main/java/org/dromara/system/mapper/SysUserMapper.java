@@ -22,11 +22,7 @@ import static org.dromara.system.domain.table.SysUserTableDef.SYS_USER;
 public interface SysUserMapper extends BaseMapperPlus<SysUser> {
 
     default Page<SysUserVo> selectPageUserList(PageQuery pageQuery, QueryWrapper queryWrapper) {
-        return this.paginateWithRelationsAs(pageQuery, queryWrapper, SysUserVo.class, DataPermission.of(
-                DataColumn.of("deptName", "u.dept_id"),
-                DataColumn.of("userName", "u.user_id")
-            )
-        );
+        return this.paginateWithRelationsAs(pageQuery, queryWrapper, SysUserVo.class, DataColumn.of("deptName", "u.dept_id"), DataColumn.of("userName", "u.user_id"));
     }
 
     /**
@@ -52,7 +48,7 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
      * @return 用户信息集合信息
      */
     default Page<SysUserVo> selectAllocatedList(PageQuery page, QueryWrapper queryWrapper) {
-        return this.paginateAs(page, queryWrapper, SysUserVo.class, DataPermission.of(DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "u.user_id")));
+        return this.paginateAs(page, queryWrapper, SysUserVo.class, DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "u.user_id"));
     }
 
 
@@ -98,12 +94,12 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
 
     default SysUserVo selectUserById(Long userId) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SysUser::getUserId).eq(userId);
-        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class, DataPermission.of(DataColumn.of("deptName", "dept_id"), DataColumn.of("userName", "user_id")));
+        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class, DataColumn.of("deptName", "dept_id"), DataColumn.of("userName", "user_id"));
     }
 
 
     default boolean update(UpdateChain<SysUser> updateChain) {
-        return this.update(updateChain, DataPermission.of(DataColumn.of("deptName", "dept_id"), DataColumn.of("userName", "user_id")));
+        return this.update(updateChain, DataColumn.of("deptName", "dept_id"), DataColumn.of("userName", "user_id"));
     }
 
 

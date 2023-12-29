@@ -31,12 +31,13 @@ public class DataColumn {
         return new DataColumn(key, value);
     }
 
+
     public static DataColumn of(String key, String value) {
         return new DataColumn(new String[]{key}, new String[]{value});
     }
 
     public static DataColumn of(String key, QueryColumn value) {
-        return new DataColumn(new String[]{key}, new String[]{value.getName()});
+        return new DataColumn(new String[]{key}, new String[]{"`" + value.getTable().getName() + "`.`" + value.getName() + "`"});
     }
 
 }

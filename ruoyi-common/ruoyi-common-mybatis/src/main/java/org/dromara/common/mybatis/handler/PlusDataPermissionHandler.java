@@ -72,6 +72,9 @@ public class PlusDataPermissionHandler {
         if (StringUtils.isBlank(dataFilterSql)) {
             return;
         }
+        if (queryWrapper == null) {
+            queryWrapper = new QueryWrapper();
+        }
         queryWrapper.and(dataFilterSql);
     }
 

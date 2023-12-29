@@ -3,7 +3,6 @@ package org.dromara.demo.mapper;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.dromara.common.mybatis.annotation.DataColumn;
-import org.dromara.common.mybatis.annotation.DataPermission;
 import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.demo.domain.TestDemo;
@@ -18,10 +17,7 @@ import org.dromara.demo.domain.vo.TestDemoVo;
 public interface TestDemoMapper extends BaseMapperPlus<TestDemo> {
 
     default Page<TestDemoVo> customPageList(PageQuery pageQuery, QueryWrapper queryWrapper){
-        return this.paginateAs(pageQuery, queryWrapper, TestDemoVo.class, DataPermission.of(
-            DataColumn.of("deptName", "dept_id"),
-            DataColumn.of("userName", "user_id")
-        ));
+        return this.paginateAs(pageQuery, queryWrapper, TestDemoVo.class, DataColumn.of("deptName", "dept_id"), DataColumn.of("userName", "user_id"));
     }
 
 }

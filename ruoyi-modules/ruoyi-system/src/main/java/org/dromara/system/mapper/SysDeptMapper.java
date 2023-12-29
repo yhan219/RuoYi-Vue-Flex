@@ -34,9 +34,7 @@ public interface SysDeptMapper extends BaseMapperPlus<SysDept> {
 
     default SysDeptVo selectDeptById(Long deptId){
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_DEPT.DEPT_ID.eq(deptId));
-        return selectOneByQueryAs(queryWrapper, SysDeptVo.class, DataPermission.of(
-            DataColumn.of("deptName", "dept_id")
-        ));
+        return selectOneByQueryAs(queryWrapper, SysDeptVo.class, DataColumn.of("deptName", "dept_id"));
     }
 
 

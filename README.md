@@ -49,12 +49,8 @@ gen:
 ```
 现写法：
 ```java
-    default Page<SysRoleVo> selectPageRoleList(PageQuery pageQuery, QueryWrapper queryWrapper){
-        return paginateAs(pageQuery, queryWrapper, SysRoleVo.class, DataPermission.of(
-                DataColumn.of("deptName", "d.dept_id"),
-                DataColumn.of("userName", "r.create_by")
-            )
-        );
+    Page<SysRoleVo> selectPageRoleList(PageQuery pageQuery, QueryWrapper queryWrapper){
+        return paginateAs(pageQuery, queryWrapper, DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "r.create_by"));
     }
 ```
 > 注：尝试写过拦截器以达到用法完全相同的目的，可惜拦截器功能和mybatis flex的插件不兼容，使用了数据权限插件，则无法使用mybatis flex的多租户插件等。如果你有更好的方法，欢迎pr
