@@ -73,7 +73,7 @@ TenantHelper.ignore(() -> baseMapper.selectTenantUserByUserName(userName, tenant
 ## 特别鸣谢
 [ruoyi-vue-plus](https://gitee.com/dromara/RuoYi-Vue-Plus/tree/5.X/)
 
-[mybatis-flex](https://gitee.com/yhan219/mybatis-flex)
+[mybatis-flex](https://gitee.com/mybatis-flex/mybatis-flex)
 
 [ruoyi-plus-vben](https://gitee.com/dapppp/ruoyi-plus-vben)
 
