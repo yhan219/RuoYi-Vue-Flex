@@ -2,8 +2,8 @@ package org.dromara.common.tenant.handle;
 
 import com.mybatisflex.core.tenant.TenantFactory;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.common.tenant.helper.TenantHelper;
 
 /**
@@ -11,6 +11,7 @@ import org.dromara.common.tenant.helper.TenantHelper;
  *
  * @author Lion Li
  */
+@Slf4j
 @AllArgsConstructor
 public class PlusTenantFactory implements TenantFactory {
 
@@ -18,14 +19,11 @@ public class PlusTenantFactory implements TenantFactory {
 
     @Override
     public Object[] getTenantIds() {
-        String tenantId = LoginHelper.getTenantId();
+        String tenantId = TenantHelper.getTenantId();
         if (StringUtils.isBlank(tenantId)) {
-            return null;
-        }
-        String dynamicTenantId = TenantHelper.getDynamic();
-        if (StringUtils.isNotBlank(dynamicTenantId)) {
             // 返回动态租户
-            return new Object[]{dynamicTenantId};
+            log.error("无法获取有效的租户id -> Null");
+            return null;
         }
         // 返回固定租户
         return new Object[]{tenantId};
