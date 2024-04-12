@@ -25,6 +25,9 @@ ruoyi-vue-flex将ruoyi-vue-plus中使用的mybatis-plus替换为mybatis-flex,并
 
 ruoyi-vue-flex将定期同步ruoyi-vue-plus，非冲突功能每天升级，冲突功能最迟不超过一周完成升级。
 
+另有cloud版[ruoyi-cloud-flex](https://gitee.com/yhan219/ruoyi-cloud-flex)欢迎使用
+
+
 # 版本
 与ruoyi-vue-plus保持一致，当前版本`5.1.2`
 
