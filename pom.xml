@@ -25,8 +25,7 @@
         <easyexcel.version>3.3.3</easyexcel.version>
         <velocity.version>2.3</velocity.version>
         <satoken.version>1.37.0</satoken.version>
-        <mybatis-flex.version>1.8.6</mybatis-flex.version>
-        <mybatis-spring.version>3.0.2</mybatis-spring.version>
+        <mybatis-flex.version>1.8.7</mybatis-flex.version>
         <hutool.version>5.8.22</hutool.version>
         <okhttp.version>4.10.0</okhttp.version>
         <spring-boot-admin.version>3.1.8</spring-boot-admin.version>
@@ -200,24 +199,10 @@
 
             <dependency>
                 <groupId>com.mybatis-flex</groupId>
-                <artifactId>mybatis-flex-spring-boot-starter</artifactId>
+                <artifactId>mybatis-flex-spring-boot3-starter</artifactId>
                 <version>${mybatis-flex.version}</version>
-
-                <!--排除 mybatis-spring 版本-->
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.mybatis</groupId>
-                        <artifactId>mybatis-spring</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
-            <!-- 添加已适配 springboot 3 的 mybatis-spring 依赖-->
-            <dependency>
-                <groupId>org.mybatis</groupId>
-                <artifactId>mybatis-spring</artifactId>
-                <version>${mybatis-spring.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>com.mybatis-flex</groupId>
