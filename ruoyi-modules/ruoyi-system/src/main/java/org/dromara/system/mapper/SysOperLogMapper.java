@@ -9,6 +9,6 @@ import org.dromara.system.domain.vo.SysOperLogVo;
  *
  * @author Lion Li
  */
-public interface SysOperLogMapper extends BaseMapperPlus<SysOperLog, SysOperLogVo> {
+public interface SysOperLogMapper extends BaseMapperPlus<SysOperLog> {
 
 }

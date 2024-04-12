@@ -1,7 +1,7 @@
 package org.dromara.demo.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.domain.R;
 import org.dromara.demo.domain.ShardingOrder;
@@ -22,11 +22,7 @@ public class TestShardingController {
 
     @GetMapping("/page")
     public R<Page<ShardingOrder>> page() {
-        Page<ShardingOrder> page = new Page<>();
-        page.setCurrent(3L);
-        LambdaQueryWrapper<ShardingOrder> lqw = new LambdaQueryWrapper<>();
-        lqw.orderByAsc(ShardingOrder::getOrderId);
-        torderMapper.selectPage(page, lqw);
+        Page<ShardingOrder> page = torderMapper.paginate(1, 10, QueryWrapper.create());
         return R.ok(page);
     }
 

@@ -19,9 +19,5 @@ public class TenantProperties {
      */
     private Boolean enable;
 
-    /**
-     * 排除表
-     */
-    private List<String> excludes;
 
 }

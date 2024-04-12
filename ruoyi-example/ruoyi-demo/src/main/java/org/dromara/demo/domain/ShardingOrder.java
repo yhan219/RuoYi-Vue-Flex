@@ -1,9 +1,9 @@
 package org.dromara.demo.domain;
 
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
-@TableName("t_order")
+@Table("t_order")
 @Data
 public class ShardingOrder {
 

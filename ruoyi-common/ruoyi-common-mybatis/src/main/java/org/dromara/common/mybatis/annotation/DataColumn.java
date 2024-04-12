@@ -1,6 +1,8 @@
 package org.dromara.common.mybatis.annotation;
 
-import java.lang.annotation.*;
+import com.mybatisflex.core.query.QueryColumn;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
  * 数据权限
@@ -10,19 +12,32 @@ import java.lang.annotation.*;
  * @author Lion Li
  * @version 3.5.0
  */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface DataColumn {
+
+@AllArgsConstructor
+@Getter
+public class DataColumn {
 
     /**
      * 占位符关键字
      */
-    String[] key() default "deptName";
+    private String[] key;
 
     /**
      * 占位符替换值
      */
-    String[] value() default "dept_id";
+    private String[] value;
+
+    public static DataColumn of(String[] key, String[] value) {
+        return new DataColumn(key, value);
+    }
+
+
+    public static DataColumn of(String key, String value) {
+        return new DataColumn(new String[]{key}, new String[]{value});
+    }
+
+    public static DataColumn of(String key, QueryColumn value) {
+        return new DataColumn(new String[]{key}, new String[]{"`" + value.getTable().getName() + "`.`" + value.getName() + "`"});
+    }
 
 }

@@ -1,9 +1,8 @@
 package org.dromara.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.TenantConstants;
 import org.dromara.common.core.exception.ServiceException;
@@ -25,6 +24,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import static org.dromara.system.domain.table.SysTenantPackageTableDef.SYS_TENANT_PACKAGE;
+import static org.dromara.system.domain.table.SysTenantTableDef.SYS_TENANT;
+
 /**
  * 租户套餐Service业务层处理
  *
@@ -42,7 +44,7 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
      */
     @Override
     public SysTenantPackageVo queryById(Long packageId){
-        return baseMapper.selectVoById(packageId);
+        return baseMapper.selectOneWithRelationsByIdAs(packageId, SysTenantPackageVo.class);
     }
 
     /**
@@ -50,15 +52,15 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
      */
     @Override
     public TableDataInfo<SysTenantPackageVo> queryPageList(SysTenantPackageBo bo, PageQuery pageQuery) {
-        LambdaQueryWrapper<SysTenantPackage> lqw = buildQueryWrapper(bo);
-        Page<SysTenantPackageVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
+        QueryWrapper lqw = buildQueryWrapper(bo);
+        Page<SysTenantPackageVo> result = baseMapper.paginateAs(pageQuery, lqw, SysTenantPackageVo.class);
         return TableDataInfo.build(result);
     }
 
     @Override
     public List<SysTenantPackageVo> selectList() {
-        return baseMapper.selectVoList(new LambdaQueryWrapper<SysTenantPackage>()
-                .eq(SysTenantPackage::getStatus, TenantConstants.NORMAL));
+        return baseMapper.selectListByQueryAs(QueryWrapper.create().from(SYS_TENANT_PACKAGE)
+            .where(SYS_TENANT_PACKAGE.STATUS.eq(TenantConstants.NORMAL)), SysTenantPackageVo.class);
     }
 
     /**
@@ -66,16 +68,16 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
      */
     @Override
     public List<SysTenantPackageVo> queryList(SysTenantPackageBo bo) {
-        LambdaQueryWrapper<SysTenantPackage> lqw = buildQueryWrapper(bo);
-        return baseMapper.selectVoList(lqw);
+        QueryWrapper lqw = buildQueryWrapper(bo);
+        return baseMapper.selectListByQueryAs(lqw, SysTenantPackageVo.class);
     }
 
-    private LambdaQueryWrapper<SysTenantPackage> buildQueryWrapper(SysTenantPackageBo bo) {
-        LambdaQueryWrapper<SysTenantPackage> lqw = Wrappers.lambdaQuery();
-        lqw.like(StringUtils.isNotBlank(bo.getPackageName()), SysTenantPackage::getPackageName, bo.getPackageName());
-        lqw.eq(StringUtils.isNotBlank(bo.getStatus()), SysTenantPackage::getStatus, bo.getStatus());
-        lqw.orderByAsc(SysTenantPackage::getPackageId);
-        return lqw;
+    private QueryWrapper buildQueryWrapper(SysTenantPackageBo bo) {
+        return QueryWrapper.create()
+            .from(SYS_TENANT_PACKAGE)
+            .where(SYS_TENANT_PACKAGE.PACKAGE_NAME.like(bo.getPackageName()))
+            .and(SYS_TENANT_PACKAGE.STATUS.eq(bo.getStatus()))
+            .orderBy(SYS_TENANT_PACKAGE.PACKAGE_ID, true);
     }
 
     /**
@@ -92,7 +94,7 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
         } else {
             add.setMenuIds("");
         }
-        boolean flag = baseMapper.insert(add) > 0;
+        boolean flag = baseMapper.insert(add,true) > 0;
         if (flag) {
             bo.setPackageId(add.getPackageId());
         }
@@ -113,7 +115,7 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
         } else {
             update.setMenuIds("");
         }
-        return baseMapper.updateById(update) > 0;
+        return baseMapper.update(update) > 0;
     }
 
     /**
@@ -125,7 +127,7 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
     @Override
     public int updatePackageStatus(SysTenantPackageBo bo) {
         SysTenantPackage tenantPackage = MapstructUtils.convert(bo, SysTenantPackage.class);
-        return baseMapper.updateById(tenantPackage);
+        return baseMapper.update(tenantPackage);
     }
 
     /**
@@ -135,11 +137,12 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
         if(isValid){
-            boolean exists = tenantMapper.exists(new LambdaQueryWrapper<SysTenant>().in(SysTenant::getPackageId, ids));
+            boolean exists = tenantMapper.selectCountByQuery(QueryWrapper.create().from(SYS_TENANT).where(SYS_TENANT.PACKAGE_ID.in(ids))) >0;
             if (exists) {
                 throw new ServiceException("租户套餐已被使用");
             }
         }
-        return baseMapper.deleteBatchIds(ids) > 0;
+        return baseMapper.deleteBatchByIds(ids) > 0;
     }
+
 }

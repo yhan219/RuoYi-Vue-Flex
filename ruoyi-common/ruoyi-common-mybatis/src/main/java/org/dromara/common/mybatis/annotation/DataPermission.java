@@ -1,6 +1,10 @@
 package org.dromara.common.mybatis.annotation;
 
-import java.lang.annotation.*;
+import com.mybatisflex.core.query.QueryWrapper;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.dromara.common.core.utils.SpringUtils;
+import org.dromara.common.mybatis.handler.PlusDataPermissionHandler;
 
 /**
  * 数据权限组
@@ -8,11 +12,29 @@ import java.lang.annotation.*;
  * @author Lion Li
  * @version 3.5.0
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface DataPermission {
+@AllArgsConstructor
+@Getter
+public class DataPermission {
 
-    DataColumn[] value();
+    private static final PlusDataPermissionHandler DATA_PERMISSION_HANDLER = SpringUtils.getBean(PlusDataPermissionHandler.class);
+
+    DataColumn[] value;
+
+
+    public static DataPermission of(DataColumn... value) {
+        return new DataPermission(value);
+    }
+
+    public void handler(QueryWrapper queryWrapper) {
+        DATA_PERMISSION_HANDLER.handlerDataPermission(this, queryWrapper, true);
+    }
+
+    public String toSQL(boolean isSelect) {
+        return DATA_PERMISSION_HANDLER.getSQL(this, isSelect);
+    }
+
+    public String toSQL() {
+        return toSQL(true);
+    }
 
 }

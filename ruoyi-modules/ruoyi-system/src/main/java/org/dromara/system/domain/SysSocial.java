@@ -1,7 +1,7 @@
 package org.dromara.system.domain;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dromara.common.tenant.core.TenantEntity;
@@ -15,7 +15,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("sys_social")
+@Table("sys_social")
 public class SysSocial extends TenantEntity {
 
     @Serial
@@ -24,7 +24,7 @@ public class SysSocial extends TenantEntity {
     /**
      * 主键
      */
-    @TableId(value = "id")
+    @Id
     private Long id;
 
     /**

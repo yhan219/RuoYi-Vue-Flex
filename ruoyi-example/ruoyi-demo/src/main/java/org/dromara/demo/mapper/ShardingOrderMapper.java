@@ -1,15 +1,14 @@
 package org.dromara.demo.mapper;
 
-import com.baomidou.dynamic.datasource.annotation.DS;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
+import com.mybatisflex.annotation.UseDataSource;
 import org.apache.ibatis.annotations.Mapper;
+import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
 import org.dromara.demo.domain.ShardingOrder;
 
 
 @Mapper
-@DS("sharding")
-public interface ShardingOrderMapper extends BaseMapper<ShardingOrder> {
+@UseDataSource("sharding")
+public interface ShardingOrderMapper extends BaseMapperPlus<ShardingOrder> {
 
 
 }

@@ -20,11 +20,12 @@
         <spring-boot.version>3.1.7</spring-boot.version>
         <spring-cloud.version>2022.0.4</spring-cloud.version>
         <spring-boot-admin.version>3.1.8</spring-boot-admin.version>
+
+        <mybatis-flex.version>1.8.7</mybatis-flex.version>
         <spring-boot.mybatis>3.0.3</spring-boot.mybatis>
-        <mybatis.version>3.5.13</mybatis.version>
-        <mybatis-plus.version>3.5.4</mybatis-plus.version>
-        <p6spy.version>3.9.1</p6spy.version>
-        <dynamic-ds.version>4.2.0</dynamic-ds.version>
+        <mybatis.version>3.5.15</mybatis.version>
+
+
         <velocity.version>2.3</velocity.version>
         <swagger.core.version>2.2.15</swagger.core.version>
         <springdoc.version>2.2.0</springdoc.version>
@@ -174,8 +175,24 @@
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
                 <version>${spring-boot.mybatis}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.mybatis</groupId>
+                        <artifactId>mybatis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
-
+            <dependency>
+                <groupId>com.mybatis-flex</groupId>
+                <artifactId>mybatis-flex-spring-boot3-starter</artifactId>
+                <version>${mybatis-flex.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.mybatis</groupId>
+                        <artifactId>mybatis</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
             <dependency>
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis</artifactId>
@@ -183,21 +200,10 @@
             </dependency>
 
             <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-boot-starter</artifactId>
-                <version>${mybatis-plus.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-annotation</artifactId>
-                <version>${mybatis-plus.version}</version>
-            </dependency>
-            <!-- sql性能分析插件 -->
-            <dependency>
-                <groupId>p6spy</groupId>
-                <artifactId>p6spy</artifactId>
-                <version>${p6spy.version}</version>
+                <groupId>com.mybatis-flex</groupId>
+                <artifactId>mybatis-flex-processor</artifactId>
+                <version>${mybatis-flex.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -417,6 +423,11 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
                             <version>${mapstruct-plus.lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>com.mybatis-flex</groupId>
+                            <artifactId>mybatis-flex-processor</artifactId>
+                            <version>${mybatis-flex.version}</version>
                         </path>
                     </annotationProcessorPaths>
                     <compilerArgs>

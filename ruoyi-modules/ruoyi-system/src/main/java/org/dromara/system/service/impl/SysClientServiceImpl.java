@@ -1,14 +1,12 @@
 package org.dromara.system.service.impl;
 
 import cn.hutool.crypto.SecureUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.core.update.UpdateChain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.utils.MapstructUtils;
-import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.system.domain.SysClient;
@@ -20,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+
+import static org.dromara.system.domain.table.SysClientTableDef.SYS_CLIENT;
 
 /**
  * 客户端管理Service业务层处理
@@ -38,7 +38,7 @@ public class SysClientServiceImpl implements ISysClientService {
      */
     @Override
     public SysClientVo queryById(Long id) {
-        SysClientVo vo = baseMapper.selectVoById(id);
+        SysClientVo vo = baseMapper.selectOneWithRelationsByIdAs(id, SysClientVo.class);
         vo.setGrantTypeList(List.of(vo.getGrantType().split(",")));
         return vo;
     }
@@ -49,7 +49,7 @@ public class SysClientServiceImpl implements ISysClientService {
      */
     @Override
     public SysClientVo queryByClientId(String clientId) {
-        return baseMapper.selectVoOne(new LambdaQueryWrapper<SysClient>().eq(SysClient::getClientId, clientId));
+        return baseMapper.selectOneByQueryAs(QueryWrapper.create().from(SYS_CLIENT).where(SYS_CLIENT.CLIENT_ID.eq(clientId)), SysClientVo.class);
     }
 
     /**
@@ -57,8 +57,8 @@ public class SysClientServiceImpl implements ISysClientService {
      */
     @Override
     public TableDataInfo<SysClientVo> queryPageList(SysClientBo bo, PageQuery pageQuery) {
-        LambdaQueryWrapper<SysClient> lqw = buildQueryWrapper(bo);
-        Page<SysClientVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
+        QueryWrapper lqw = buildQueryWrapper(bo);
+        Page<SysClientVo> result = baseMapper.paginateAs(pageQuery, lqw, SysClientVo.class);
         result.getRecords().forEach(r -> r.setGrantTypeList(List.of(r.getGrantType().split(","))));
         return TableDataInfo.build(result);
     }
@@ -68,18 +68,18 @@ public class SysClientServiceImpl implements ISysClientService {
      */
     @Override
     public List<SysClientVo> queryList(SysClientBo bo) {
-        LambdaQueryWrapper<SysClient> lqw = buildQueryWrapper(bo);
-        return baseMapper.selectVoList(lqw);
+        QueryWrapper lqw = buildQueryWrapper(bo);
+        return baseMapper.selectListByQueryAs(lqw, SysClientVo.class);
     }
 
-    private LambdaQueryWrapper<SysClient> buildQueryWrapper(SysClientBo bo) {
-        LambdaQueryWrapper<SysClient> lqw = Wrappers.lambdaQuery();
-        lqw.eq(StringUtils.isNotBlank(bo.getClientId()), SysClient::getClientId, bo.getClientId());
-        lqw.eq(StringUtils.isNotBlank(bo.getClientKey()), SysClient::getClientKey, bo.getClientKey());
-        lqw.eq(StringUtils.isNotBlank(bo.getClientSecret()), SysClient::getClientSecret, bo.getClientSecret());
-        lqw.eq(StringUtils.isNotBlank(bo.getStatus()), SysClient::getStatus, bo.getStatus());
-        lqw.orderByAsc(SysClient::getId);
-        return lqw;
+    private QueryWrapper buildQueryWrapper(SysClientBo bo) {
+       return QueryWrapper.create()
+            .from(SYS_CLIENT)
+            .where(SYS_CLIENT.CLIENT_ID.eq(bo.getClientId()))
+            .and(SYS_CLIENT.CLIENT_KEY.eq(bo.getClientKey()))
+            .and(SYS_CLIENT.CLIENT_SECRET.eq(bo.getClientSecret()))
+            .and(SYS_CLIENT.STATUS.eq(bo.getStatus()))
+            .orderBy(SYS_CLIENT.ID, true);
     }
 
     /**
@@ -94,7 +94,7 @@ public class SysClientServiceImpl implements ISysClientService {
         String clientKey = bo.getClientKey();
         String clientSecret = bo.getClientSecret();
         add.setClientId(SecureUtil.md5(clientKey + clientSecret));
-        boolean flag = baseMapper.insert(add) > 0;
+        boolean flag = baseMapper.insert(add,true) > 0;
         if (flag) {
             bo.setId(add.getId());
         }
@@ -109,7 +109,7 @@ public class SysClientServiceImpl implements ISysClientService {
         SysClient update = MapstructUtils.convert(bo, SysClient.class);
         validEntityBeforeSave(update);
         update.setGrantType(String.join(",", bo.getGrantTypeList()));
-        return baseMapper.updateById(update) > 0;
+        return baseMapper.update(update) > 0;
     }
 
     /**
@@ -117,10 +117,11 @@ public class SysClientServiceImpl implements ISysClientService {
      */
     @Override
     public int updateUserStatus(Long id, String status) {
-        return baseMapper.update(null,
-            new LambdaUpdateWrapper<SysClient>()
-                .set(SysClient::getStatus, status)
-                .eq(SysClient::getId, id));
+        return UpdateChain.of(SysClient.class)
+            .set(SysClient::getStatus, status)
+            .from(SysClient.class)
+            .where(SysClient::getId).eq(id)
+            .update() ? 1 : 0;
     }
 
     /**
@@ -138,6 +139,6 @@ public class SysClientServiceImpl implements ISysClientService {
         if (isValid) {
             //TODO 做一些业务上的校验,判断是否需要校验
         }
-        return baseMapper.deleteBatchIds(ids) > 0;
+        return baseMapper.deleteBatchByIds(ids) > 0;
     }
 }

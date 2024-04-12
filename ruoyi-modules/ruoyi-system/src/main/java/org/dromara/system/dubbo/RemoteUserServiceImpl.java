@@ -2,7 +2,7 @@ package org.dromara.system.dubbo;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.dromara.common.core.enums.UserStatus;
@@ -46,7 +46,8 @@ public class RemoteUserServiceImpl implements RemoteUserService {
     @Override
     public LoginUser getUserInfo(String username, String tenantId) throws UserException {
         return TenantHelper.dynamic(tenantId, () -> {
-            SysUser sysUser = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
+            SysUser sysUser = userMapper.selectOneByQuery(QueryWrapper.create()
+                .from(SysUser.class)
                 .select(SysUser::getUserName, SysUser::getStatus)
                 .eq(SysUser::getUserName, username));
             if (ObjectUtil.isNull(sysUser)) {
@@ -64,7 +65,8 @@ public class RemoteUserServiceImpl implements RemoteUserService {
     @Override
     public LoginUser getUserInfo(Long userId, String tenantId) throws UserException {
         return TenantHelper.dynamic(tenantId, () -> {
-            SysUser sysUser = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
+            SysUser sysUser = userMapper.selectOneByQuery(QueryWrapper.create()
+                .from(SysUser.class)
                 .select(SysUser::getUserName, SysUser::getStatus)
                 .eq(SysUser::getUserId, userId));
             if (ObjectUtil.isNull(sysUser)) {
@@ -82,7 +84,8 @@ public class RemoteUserServiceImpl implements RemoteUserService {
     @Override
     public LoginUser getUserInfoByPhonenumber(String phonenumber, String tenantId) throws UserException {
         return TenantHelper.dynamic(tenantId, () -> {
-            SysUser sysUser = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
+            SysUser sysUser = userMapper.selectOneByQuery(QueryWrapper.create()
+                .from(SysUser.class)
                 .select(SysUser::getPhonenumber, SysUser::getStatus)
                 .eq(SysUser::getPhonenumber, phonenumber));
             if (ObjectUtil.isNull(sysUser)) {
@@ -100,7 +103,8 @@ public class RemoteUserServiceImpl implements RemoteUserService {
     @Override
     public LoginUser getUserInfoByEmail(String email, String tenantId) throws UserException {
         return TenantHelper.dynamic(tenantId, () -> {
-            SysUser user = userMapper.selectOne(new LambdaQueryWrapper<SysUser>()
+            SysUser user = userMapper.selectOneByQuery(QueryWrapper.create()
+                .from(SysUser.class)
                 .select(SysUser::getEmail, SysUser::getStatus)
                 .eq(SysUser::getEmail, email));
             if (ObjectUtil.isNull(user)) {
@@ -144,9 +148,9 @@ public class RemoteUserServiceImpl implements RemoteUserService {
             if (!("true".equals(configService.selectConfigByKey("sys.account.registerUser")))) {
                 throw new ServiceException("当前系统没有开启注册功能");
             }
-            return userMapper.exists(new LambdaQueryWrapper<SysUser>()
+            return userMapper.selectCountByQuery(QueryWrapper.create(SysUser.class)
                 .eq(SysUser::getUserName, sysUserBo.getUserName())
-                .ne(ObjectUtil.isNotNull(sysUserBo.getUserId()), SysUser::getUserId, sysUserBo.getUserId()));
+                .ne(SysUser::getUserId, sysUserBo.getUserId())) > 0;
         });
         if (exist) {
             throw new UserException("user.register.save.error", username);
@@ -197,7 +201,8 @@ public class RemoteUserServiceImpl implements RemoteUserService {
         sysUser.setLoginIp(ip);
         sysUser.setLoginDate(DateUtils.getNowDate());
         sysUser.setUpdateBy(userId);
-        DataPermissionHelper.ignore(() -> userMapper.updateById(sysUser));
+        // DataPermissionHelper.ignore(() -> userMapper.updateById(sysUser));
+        userMapper.update(sysUser);
     }
 
 }

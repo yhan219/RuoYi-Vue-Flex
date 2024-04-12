@@ -36,7 +36,6 @@ public interface ISysSocialService {
     /**
      * 更新社会化关系
      */
-
     Boolean updateByBo(SysSocialBo bo);
 
     /**

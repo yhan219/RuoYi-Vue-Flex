@@ -4,8 +4,7 @@ import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.convert.Convert;
 import com.alibaba.ttl.TransmittableThreadLocal;
-import com.baomidou.mybatisplus.core.plugins.IgnoreStrategy;
-import com.baomidou.mybatisplus.core.plugins.InterceptorIgnoreHelper;
+import com.mybatisflex.core.tenant.TenantManager;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,14 +40,14 @@ public class TenantHelper {
      * 开启忽略租户(开启后需手动调用 {@link #disableIgnore()} 关闭)
      */
     public static void enableIgnore() {
-        InterceptorIgnoreHelper.handle(IgnoreStrategy.builder().tenantLine(true).build());
+        TenantManager.ignoreTenantCondition();
     }
 
     /**
      * 关闭忽略租户
      */
     public static void disableIgnore() {
-        InterceptorIgnoreHelper.clearIgnoreStrategy();
+        TenantManager.restoreTenantCondition();
     }
 
     /**

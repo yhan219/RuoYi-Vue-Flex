@@ -1,22 +1,23 @@
 package org.dromara.system.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.mybatisflex.core.query.QueryWrapper;
 import org.dromara.common.core.constant.UserConstants;
 import org.dromara.system.domain.SysMenu;
 import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
 import org.dromara.system.domain.vo.SysMenuVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.dromara.system.domain.table.SysMenuTableDef.SYS_MENU;
 
 /**
  * 菜单表 数据层
  *
  * @author Lion Li
  */
-public interface SysMenuMapper extends BaseMapperPlus<SysMenu, SysMenuVo> {
+public interface SysMenuMapper extends BaseMapperPlus<SysMenu> {
 
     /**
      * 根据用户所有权限
@@ -31,7 +32,15 @@ public interface SysMenuMapper extends BaseMapperPlus<SysMenu, SysMenuVo> {
      * @param queryWrapper 查询条件
      * @return 菜单列表
      */
-    List<SysMenu> selectMenuListByUserId(@Param(Constants.WRAPPER) Wrapper<SysMenu> queryWrapper);
+    default List<SysMenu> selectMenuListByUserId(QueryWrapper queryWrapper){
+        //  select distinct m.menu_id, m.parent_id, m.menu_name, m.path, m.component, m.query_param, m.visible, m.status,
+        //         m.perms, m.is_frame, m.is_cache, m.menu_type, m.icon, m.order_num, m.create_time
+        //         from sys_menu m
+        //         left join sys_role_menu rm on m.menu_id = rm.menu_id
+        //         left join sys_user_role sur on rm.role_id = sur.role_id
+        //         left join sys_role ro on sur.role_id = ro.role_id
+        return new ArrayList<>();
+    }
 
     /**
      * 根据用户ID查询权限
@@ -55,12 +64,12 @@ public interface SysMenuMapper extends BaseMapperPlus<SysMenu, SysMenuVo> {
      * @return 菜单列表
      */
     default List<SysMenu> selectMenuTreeAll() {
-        LambdaQueryWrapper<SysMenu> lqw = new LambdaQueryWrapper<SysMenu>()
-            .in(SysMenu::getMenuType, UserConstants.TYPE_DIR, UserConstants.TYPE_MENU)
-            .eq(SysMenu::getStatus, UserConstants.MENU_NORMAL)
-            .orderByAsc(SysMenu::getParentId)
-            .orderByAsc(SysMenu::getOrderNum);
-        return this.selectList(lqw);
+        return selectListByQuery(QueryWrapper.create().from(SYS_MENU)
+            .where(SYS_MENU.MENU_TYPE.in(UserConstants.TYPE_DIR, UserConstants.TYPE_MENU))
+            .and(SYS_MENU.STATUS.eq(UserConstants.MENU_NORMAL))
+            .orderBy(SYS_MENU.PARENT_ID, true)
+            .orderBy(SYS_MENU.ORDER_NUM, true)
+        );
     }
 
     /**

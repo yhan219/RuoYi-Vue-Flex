@@ -1,14 +1,13 @@
 package org.dromara.system.domain.bo;
 
-import io.github.linpeilie.annotations.AutoMapper;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import org.dromara.system.domain.SysClient;
+import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.common.core.validate.AddGroup;
 import org.dromara.common.core.validate.EditGroup;
-import org.dromara.common.mybatis.core.domain.BaseEntity;
-import org.dromara.system.domain.SysClient;
+import io.github.linpeilie.annotations.AutoMapper;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import jakarta.validation.constraints.*;
 
 import java.util.List;
 
@@ -16,6 +15,7 @@ import java.util.List;
  * 授权管理业务对象 sys_client
  *
  * @author Michelle.Chung
+ * @date 2023-05-15
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

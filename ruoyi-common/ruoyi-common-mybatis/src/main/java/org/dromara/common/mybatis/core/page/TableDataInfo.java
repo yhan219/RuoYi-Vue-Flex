@@ -1,7 +1,7 @@
 package org.dromara.common.mybatis.core.page;
 
 import cn.hutool.http.HttpStatus;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.mybatisflex.core.paginate.Page;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -53,12 +53,12 @@ public class TableDataInfo<T> implements Serializable {
         this.total = total;
     }
 
-    public static <T> TableDataInfo<T> build(IPage<T> page) {
+    public static <T> TableDataInfo<T> build(Page<T> page) {
         TableDataInfo<T> rspData = new TableDataInfo<>();
         rspData.setCode(HttpStatus.HTTP_OK);
         rspData.setMsg("查询成功");
         rspData.setRows(page.getRecords());
-        rspData.setTotal(page.getTotal());
+        rspData.setTotal(page.getTotalRow());
         return rspData;
     }
 

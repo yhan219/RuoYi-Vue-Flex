@@ -2,7 +2,7 @@ package org.dromara.system.dubbo;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.dromara.common.core.utils.StreamUtils;
@@ -34,10 +34,8 @@ public class RemoteDataScopeServiceImpl implements RemoteDataScopeService {
 
     @Override
     public String getRoleCustom(Long roleId) {
-        List<SysRoleDept> list = roleDeptMapper.selectList(
-            new LambdaQueryWrapper<SysRoleDept>()
-                .select(SysRoleDept::getDeptId)
-                .eq(SysRoleDept::getRoleId, roleId));
+        List<SysRoleDept> list = roleDeptMapper.selectListByQuery(
+            QueryWrapper.create().select(SysRoleDept::getDeptId).eq(SysRoleDept::getRoleId, roleId));
         if (CollUtil.isNotEmpty(list)) {
             return StreamUtils.join(list, rd -> Convert.toStr(rd.getDeptId()));
         }
@@ -46,9 +44,7 @@ public class RemoteDataScopeServiceImpl implements RemoteDataScopeService {
 
     @Override
     public String getDeptAndChild(Long deptId) {
-        List<SysDept> deptList = deptMapper.selectList(new LambdaQueryWrapper<SysDept>()
-            .select(SysDept::getDeptId)
-            .apply(DataBaseHelper.findInSet(deptId, "ancestors")));
+        List<SysDept> deptList = deptMapper.selectListByQuery(QueryWrapper.create().select(SysRoleDept::getDeptId).and(DataBaseHelper.findInSet(deptId, "ancestors")));
         List<Long> ids = StreamUtils.toList(deptList, SysDept::getDeptId);
         ids.add(deptId);
         if (CollUtil.isNotEmpty(ids)) {

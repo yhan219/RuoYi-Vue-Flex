@@ -27,7 +27,6 @@ import org.dromara.common.mybatis.core.page.TableDataInfo;
 
 /**
  * ${functionName}
- * 前端访问路由地址为:/${moduleName}/${businessName}
  *
  * @author ${author}
  * @date ${datetime}
@@ -35,7 +34,7 @@ import org.dromara.common.mybatis.core.page.TableDataInfo;
 @Validated
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/${businessName}")
+@RequestMapping("/${moduleName}/${businessName}")
 public class ${ClassName}Controller extends BaseController {
 
     private final I${ClassName}Service ${className}Service;

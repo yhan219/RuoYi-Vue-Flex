@@ -1,6 +1,7 @@
 package org.dromara.demo.domain;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import org.dromara.common.mybatis.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,7 +16,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("test_demo")
+@Table("test_demo")
 public class TestDemo extends BaseEntity {
 
     @Serial
@@ -25,7 +26,7 @@ public class TestDemo extends BaseEntity {
     /**
      * 主键
      */
-    @TableId(value = "id")
+    @Id
     private Long id;
 
     /**
@@ -41,7 +42,6 @@ public class TestDemo extends BaseEntity {
     /**
      * 排序号
      */
-    @OrderBy(asc = false, sort = 1)
     private Integer orderNum;
 
     /**
@@ -57,13 +57,11 @@ public class TestDemo extends BaseEntity {
     /**
      * 版本
      */
-    @Version
     private Long version;
 
     /**
      * 删除标志
      */
-    @TableLogic
     private Long delFlag;
 
 }

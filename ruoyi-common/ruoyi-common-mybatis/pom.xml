@@ -18,6 +18,11 @@
     <dependencies>
         <dependency>
             <groupId>org.dromara</groupId>
+            <artifactId>ruoyi-common-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dromara</groupId>
             <artifactId>ruoyi-common-satoken</artifactId>
         </dependency>
 
@@ -27,35 +32,19 @@
             <optional>true</optional>
         </dependency>
 
+
+        <dependency>
+            <groupId>com.mybatis-flex</groupId>
+            <artifactId>mybatis-flex-spring-boot3-starter</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.mybatis</groupId>
-                    <artifactId>mybatis-spring</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
         </dependency>
-
-        <!-- sql性能分析插件 -->
-        <dependency>
-            <groupId>p6spy</groupId>
-            <artifactId>p6spy</artifactId>
-        </dependency>
-
-        <!-- Dynamic DataSource -->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>dynamic-datasource-spring-boot3-starter</artifactId>
-            <version>${dynamic-ds.version}</version>
-        </dependency>
-
         <!-- Mysql Connector -->
         <dependency>
             <groupId>com.mysql</groupId>

@@ -1,9 +1,8 @@
 package org.dromara.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StringUtils;
@@ -21,6 +20,8 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.dromara.system.domain.table.SysNoticeTableDef.SYS_NOTICE;
+
 /**
  * 公告 服务层实现
  *
@@ -35,8 +36,8 @@ public class SysNoticeServiceImpl implements ISysNoticeService {
 
     @Override
     public TableDataInfo<SysNoticeVo> selectPageNoticeList(SysNoticeBo notice, PageQuery pageQuery) {
-        LambdaQueryWrapper<SysNotice> lqw = buildQueryWrapper(notice);
-        Page<SysNoticeVo> page = baseMapper.selectVoPage(pageQuery.build(), lqw);
+        QueryWrapper lqw = buildQueryWrapper(notice);
+        Page<SysNoticeVo> page = baseMapper.paginateAs(pageQuery, lqw, SysNoticeVo.class);
         return TableDataInfo.build(page);
     }
 
@@ -48,7 +49,7 @@ public class SysNoticeServiceImpl implements ISysNoticeService {
      */
     @Override
     public SysNoticeVo selectNoticeById(Long noticeId) {
-        return baseMapper.selectVoById(noticeId);
+        return baseMapper.selectOneWithRelationsByIdAs(noticeId, SysNoticeVo.class);
     }
 
     /**
@@ -59,20 +60,20 @@ public class SysNoticeServiceImpl implements ISysNoticeService {
      */
     @Override
     public List<SysNoticeVo> selectNoticeList(SysNoticeBo notice) {
-        LambdaQueryWrapper<SysNotice> lqw = buildQueryWrapper(notice);
-        return baseMapper.selectVoList(lqw);
+        QueryWrapper lqw = buildQueryWrapper(notice);
+        return baseMapper.selectListByQueryAs(lqw, SysNoticeVo.class);
     }
 
-    private LambdaQueryWrapper<SysNotice> buildQueryWrapper(SysNoticeBo bo) {
-        LambdaQueryWrapper<SysNotice> lqw = Wrappers.lambdaQuery();
-        lqw.like(StringUtils.isNotBlank(bo.getNoticeTitle()), SysNotice::getNoticeTitle, bo.getNoticeTitle());
-        lqw.eq(StringUtils.isNotBlank(bo.getNoticeType()), SysNotice::getNoticeType, bo.getNoticeType());
+    private QueryWrapper buildQueryWrapper(SysNoticeBo bo) {
+        QueryWrapper queryWrapper = QueryWrapper.create().from(SYS_NOTICE)
+            .where(SYS_NOTICE.NOTICE_TITLE.like(bo.getNoticeTitle()))
+            .and(SYS_NOTICE.NOTICE_TYPE.eq(bo.getNoticeType()));
         if (StringUtils.isNotBlank(bo.getCreateByName())) {
             SysUserVo sysUser = userMapper.selectUserByUserName(bo.getCreateByName());
-            lqw.eq(SysNotice::getCreateBy, ObjectUtil.isNotNull(sysUser) ? sysUser.getUserId() : null);
+            queryWrapper.and(SYS_NOTICE.CREATE_BY.eq(ObjectUtil.isNotNull(sysUser) ? sysUser.getUserId() : null));
         }
-        lqw.orderByAsc(SysNotice::getNoticeId);
-        return lqw;
+        queryWrapper.orderBy(SYS_NOTICE.NOTICE_ID, true);
+        return queryWrapper;
     }
 
     /**
@@ -84,7 +85,7 @@ public class SysNoticeServiceImpl implements ISysNoticeService {
     @Override
     public int insertNotice(SysNoticeBo bo) {
         SysNotice notice = MapstructUtils.convert(bo, SysNotice.class);
-        return baseMapper.insert(notice);
+        return baseMapper.insert(notice,true);
     }
 
     /**
@@ -96,7 +97,7 @@ public class SysNoticeServiceImpl implements ISysNoticeService {
     @Override
     public int updateNotice(SysNoticeBo bo) {
         SysNotice notice = MapstructUtils.convert(bo, SysNotice.class);
-        return baseMapper.updateById(notice);
+        return baseMapper.update(notice);
     }
 
     /**
@@ -118,6 +119,6 @@ public class SysNoticeServiceImpl implements ISysNoticeService {
      */
     @Override
     public int deleteNoticeByIds(Long[] noticeIds) {
-        return baseMapper.deleteBatchIds(Arrays.asList(noticeIds));
+        return baseMapper.deleteBatchByIds(Arrays.asList(noticeIds));
     }
 }

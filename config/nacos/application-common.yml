@@ -157,22 +157,48 @@ sa-token:
   # jwt秘钥
   jwt-secret-key: abcdefghijklmnopqrstuvwxyz
 
-# MyBatisPlus配置
-# https://baomidou.com/config/
-mybatis-plus:
-  # 不支持多包, 如有需要可在注解配置 或 提升扫包等级
-  # 例如 com.**.**.mapper
-  mapperPackage: org.dromara.**.mapper
-  # 对应的 XML 文件位置
-  mapperLocations: classpath*:mapper/**/*Mapper.xml
-  # 实体扫描，多个package用逗号或者分号分隔
-  typeAliasesPackage: org.dromara.**.domain
+# MyBatisFlex配置
+# https://mybatis-flex.com/zh/base/configuration.html
+mybatis-flex:
+  # 搜索指定包别名
+  type-aliases-package: org.dromara.**.domain
+  # 配置mapper的扫描，找到所有的mapper.xml映射文件
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  configuration:
+    ## 以下为mybatis原生配置 https://mybatis.org/mybatis-3/zh/configuration.html
+    # 自动驼峰命名规则（camel case）映射
+    map_underscore_to_camel_case: true
+    # MyBatis 自动映射策略
+    # NONE：不启用 PARTIAL：只对非嵌套 resultMap 自动映射 FULL：对所有 resultMap 自动映射
+    auto_mapping_behavior: FULL
+    # MyBatis 自动映射时未知列或未知属性处理策
+    # NONE：不做处理 WARNING：打印相关警告 FAILING：抛出异常和详细信息
+    auto_mapping_unknown_column_behavior: NONE
+    # 更详细的日志输出 会有性能损耗 org.apache.ibatis.logging.stdout.StdOutImpl
+    # 关闭日志记录 (可单纯使用 p6spy 分析) org.apache.ibatis.logging.nologging.NoLoggingImpl
+    # 默认日志输出 org.apache.ibatis.logging.slf4j.Slf4jImpl
+    #    log_impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启sql审计
+    #    audit_enable: true
+    # 开启sql打印，开启sql打印默认会开启sql审计
+  #    sql_print: true
   global-config:
-    dbConfig:
-      # 主键类型
-      # AUTO 自增 NONE 空 INPUT 用户输入 ASSIGN_ID 雪花 ASSIGN_UUID 唯一 UUID
-      # 如需改为自增 需要将数据库表全部设置为自增
-      idType: ASSIGN_ID
+    # 是否打印 Logo banner
+    print-banner: true
+    # 全局的 ID 生成策略配置
+    key-config:
+      key-type: Generator
+      value: flexId
+    # 逻辑未删除值
+    normal-value-of-logic-delete: '0'
+    # 逻辑已删除值(框架表均使用此值 禁止随意修改)
+    deleted-value-of-logic-delete: '2'
+    # 默认的逻辑删除字段
+    logic-delete-column: del_flag
+    # 默认的多租户字段
+    tenant-column: tenant_id
+    # 默认的乐观锁字段
+    version-column: version
 
 # 数据加密
 mybatis-encryptor:
@@ -242,14 +268,4 @@ seata:
 tenant:
   # 是否开启
   enable: true
-  # 排除表
-  excludes:
-    - sys_menu
-    - sys_tenant
-    - sys_tenant_package
-    - sys_role_dept
-    - sys_role_menu
-    - sys_user_post
-    - sys_user_role
-    - sys_client
-    - sys_oss_config
+

@@ -9,6 +9,6 @@ import org.dromara.system.domain.vo.SysLogininforVo;
  *
  * @author Lion Li
  */
-public interface SysLogininforMapper extends BaseMapperPlus<SysLogininfor, SysLogininforVo> {
+public interface SysLogininforMapper extends BaseMapperPlus<SysLogininfor> {
 
 }

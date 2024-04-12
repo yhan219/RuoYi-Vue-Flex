@@ -10,7 +10,9 @@ import org.dromara.common.tenant.core.TenantEntity;
 #else
 import org.dromara.common.mybatis.core.domain.BaseEntity;
 #end
-import com.baomidou.mybatisplus.annotation.*;
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 #foreach ($import in $importList)
@@ -32,7 +34,7 @@ import java.io.Serial;
 #end
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("${tableName}")
+@Table("${tableName}")
 public class ${ClassName} extends ${Entity} {
 
     @Serial
@@ -44,13 +46,12 @@ public class ${ClassName} extends ${Entity} {
      * $column.columnComment
      */
 #if($column.javaField=='delFlag')
-    @TableLogic
 #end
 #if($column.javaField=='version')
-    @Version
+    @Column(version = true)
 #end
 #if($column.isPk==1)
-    @TableId(value = "$column.columnName")
+    @Id
 #end
     private $column.javaType $column.javaField;
 

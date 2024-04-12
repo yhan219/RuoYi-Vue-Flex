@@ -1,35 +1,74 @@
-<img src="https://foruda.gitee.com/images/1679673780944866919/d908a86f_1766278.png" width="56%" height="56%">
+<img src="https://raw.githubusercontent.com/yhan219/blog-image/master/yhan/mybatiscloudflex.png" width="50%" height="50%">
 <div style="height: 10px; clear: both;"></div>
 
-- - -
-## 平台简介
+---
 
-[![码云Gitee](https://gitee.com/dromara/RuoYi-Cloud-Plus/badge/star.svg?theme=blue)](https://gitee.com/dromara/RuoYi-Cloud-Plus)
-[![GitHub](https://img.shields.io/github/stars/dromara/RuoYi-Cloud-Plus.svg?style=social&label=Stars)](https://github.com/dromara/RuoYi-Cloud-Plus)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://gitee.com/dromara/RuoYi-Cloud-Plus/blob/master/LICENSE)
-[![使用IntelliJ IDEA开发维护](https://img.shields.io/badge/IntelliJ%20IDEA-提供支持-blue.svg)](https://www.jetbrains.com/?from=RuoYi-Cloud-Plus)
+# 简介
+
+[![码云Gitee](https://gitee.com/yhan219/ruoyi-cloud-flex/badge/star.svg?theme=blue)](https://gitee.com/yhan219/ruoyi-cloud-flex)
+[![GitHub](https://img.shields.io/github/stars/yhan219/ruoyi-cloud-flex.svg?style=social&label=Stars)](https://github.com/yhan219/ruoyi-cloude-flex)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://gitee.com/yhan219/ruoyi-cloude-flex/blob/mybatis-flex/LICENSE)
 <br>
-[![RuoYi-Cloud-Plus](https://img.shields.io/badge/RuoYi_Cloud_Plus-2.1.2-success.svg)](https://gitee.com/dromara/RuoYi-Cloud-Plus)
+[![ruoyi-cloude-flex](https://img.shields.io/badge/ruoyi_cloud_flex-2.1.2-success.svg)](https://gitee.com/yhan219/ruoyi-cloude-flex)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1-blue.svg)]()
 [![JDK-17](https://img.shields.io/badge/JDK-17-green.svg)]()
-[![JDK-19](https://img.shields.io/badge/JDK-21-green.svg)]()
+[![JDK-21](https://img.shields.io/badge/JDK-21-green.svg)]()
 
-> RuoYi-Cloud-Plus `微服务通用权限管理系统` 重写 RuoYi-Cloud 全方位升级(不兼容原框架)
 
-> 项目代码、文档 均开源免费可商用 遵循开源协议在项目中保留开源协议文件即可<br>
-活到老写到老 为兴趣而开源 为学习而开源 为让大家真正可以学到技术而开源
+ruoyi-cloud-flex是基于[ruoyi-cloud-plus](https://gitee.com/dromara/RuoYi-Cloud-Plus)分支的一个快速开发框架。
 
-> 系统演示: [传送门](https://plus-doc.dromara.org/#/common/demo_system)
+RuoYi-Vue-Plus 是重写 RuoYi-Vue 针对 `分布式集群与多租户` 场景全方位升级(不兼容原框架)
 
-> 前端项目地址: [plus-ui](https://gitee.com/JavaLionLi/plus-ui)
+ruoyi-cloud-flex将ruoyi-vue-plus中使用的mybatis-plus替换为mybatis-flex,并根据两个ORM框架使用的不同修改了部分逻辑。底层完全重写。
 
-> 文档地址: [plus-doc](https://plus-doc.dromara.org)
+**ruoyi-cloud-flex与ruoyi-vue-plus功能完全相同。**
 
-## 赞助商
+ruoyi-cloud-flex将定期同步ruoyi-cloud-plus，非冲突功能每天升级，冲突功能最迟不超过一周完成升级。
 
-MaxKey - https://gitee.com/dromara/MaxKey <br>
-CCFlow - https://gitee.com/opencc/RuoYi-JFlow <br>
-[如何成为赞助商 加群联系作者详谈](https://plus-doc.dromara.org/#/common/add_group)
+# 版本
+与ruoyi-vue-plus保持一致，当前版本`5.1.2`
+
+# 与ruoyi-vue-plus的差异
+
+## 数据权限用法差异
+数据权限注解，修改为类，原写法：
+```java
+    @DataPermission({
+        @DataColumn(key = "deptName", value = "d.dept_id"),
+        @DataColumn(key = "userName", value = "r.create_by")
+    })
+    Page<SysRoleVo> selectPageRoleList(@Param("page") Page<SysRole> page, @Param(Constants.WRAPPER) Wrapper<SysRole> queryWrapper);
+```
+现写法：
+```java
+    Page<SysRoleVo> selectPageRoleList(PageQuery pageQuery, QueryWrapper queryWrapper){
+        return paginateAs(pageQuery, queryWrapper, DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "r.create_by"));
+    }
+```
+> 注：尝试写过拦截器以达到用法完全相同的目的，可惜拦截器功能和mybatis flex的插件不兼容，使用了数据权限插件，则无法使用mybatis flex的多租户插件等。如果你有更好的方法，欢迎pr
+
+## 忽略租户写法差异
+- 配置中的差异：
+  原写法： 在yml中配置忽略的表，mybatis-flex不支持,但mybatis-flex会默认忽略没有多租户字段的表
+- 代码中的差异：
+  原写法:在mapper中配置注解：
+```java
+    @InterceptorIgnore(tenantLine = "true")
+    SysUserVo selectTenantUserByUserName(@Param("userName") String userName, @Param("tenantId") String tenantId);
+```
+现写法：
+```java
+// mapper中删除InterceptorIgnore注解，在service中手动忽略
+TenantHelper.ignore(() -> baseMapper.selectTenantUserByUserName(userName, tenantId));
+```
+
+## 特别鸣谢
+[ruoyi-cloud-plus](https://gitee.com/dromara/RuoYi-Cloud-Plus)
+
+[mybatis-flex](https://gitee.com/mybatis-flex/mybatis-flex)
+
+[ruoyi-plus-vben](https://gitee.com/dapppp/ruoyi-plus-vben)
+
 
 # 本框架与RuoYi的功能差异
 
@@ -128,10 +167,7 @@ CCFlow - https://gitee.com/opencc/RuoYi-JFlow <br>
 >
 >[部署项目 必看](https://plus-doc.dromara.org/#/ruoyi-cloud-plus/quickstart/deploy)
 >>[https://plus-doc.dromara.org/#/ruoyi-cloud-plus/quickstart/deploy](https://plus-doc.dromara.org/#/ruoyi-cloud-plus/quickstart/deploy)
->
->[如何加群](https://plus-doc.dromara.org/#/common/add_group)
->>[https://plus-doc.dromara.org/#/common/add_group](https://plus-doc.dromara.org/#/common/add_group)
->
+
 >[参考文档 Wiki](https://plus-doc.dromara.org)
 >>[https://plus-doc.dromara.org](https://plus-doc.dromara.org)
 
@@ -139,39 +175,3 @@ CCFlow - https://gitee.com/opencc/RuoYi-JFlow <br>
 ## 软件架构图
 
 ![Plus部署架构图](https://foruda.gitee.com/images/1678980131147747524/5c2d5a5c_1766278.png "Plus部署架构图.png")
-
-## 贡献代码
-
-[参与贡献的方式 https://plus-doc.dromara.org/#/common/contribution](https://plus-doc.dromara.org/#/common/contribution)
-
-## 捐献作者
-
-作者为兼职做开源,平时还需要工作,如果帮到了您可以请作者吃个盒饭  
-<img src="https://foruda.gitee.com/images/1678975784848381069/d8661ed9_1766278.png" width="300px" height="450px" />
-<img src="https://foruda.gitee.com/images/1678975801230205215/6f96229d_1766278.png" width="300px" height="450px" />
-
-## 演示图例
-
-|                                                                                            |                                                                                            |
-|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| ![输入图片说明](https://foruda.gitee.com/images/1680077524361362822/270bb429_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680077619939771291/989bf9b6_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680077681751513929/1c27c5bd_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680077721559267315/74d63e23_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680077765638904515/1b75d4a6_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078026375951297/eded7a4b_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078237104531207/0eb1b6a7_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078254306078709/5931e22f_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078287971528493/0b9af60a_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078308138770249/8d3b6696_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078352553634393/db5ef880_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078378238393374/601e4357_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078414983206024/2aae27c1_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078446738419874/ecce7d59_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078475971341775/149e8634_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078491666717143/3fadece7_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078558863188826/fb8ced2a_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078574561685461/ae68a0b2_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078594932772013/9d8bfec6_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078626493093532/fcfe4ff6_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078643608812515/0295bd4f_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078685196286463/d7612c81_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078703877318597/56fce0bc_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078716586545643/b6dbd68f_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078734103217688/eb1e6aa6_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078759131415480/73c525d8_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078779416197879/75e3ed02_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078802329118061/77e10915_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078893627848351/34a1c342_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078928175016986/f126ec4a_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078941718318363/b68a0f72_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680078963175518631/3bb769a1_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680078982294090567/b31c343d_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680079000642440444/77ca82a9_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680079020995074177/03b7d52e_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680079039367822173/76811806_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1680079274333484664/4dfdc7c0_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1680079290467458224/d6715fcf_1766278.png "屏幕截图") |
-
-

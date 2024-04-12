@@ -1,9 +1,8 @@
 package org.dromara.common.mybatis.core.domain;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.mybatisflex.annotation.Column;
 import lombok.Data;
 
 import java.io.Serial;
@@ -28,44 +27,39 @@ public class BaseEntity implements Serializable {
      * 搜索值
      */
     @JsonIgnore
-    @TableField(exist = false)
+    @Column(ignore = true)
     private String searchValue;
 
     /**
      * 创建部门
      */
-    @TableField(fill = FieldFill.INSERT)
     private Long createDept;
 
     /**
      * 创建者
      */
-    @TableField(fill = FieldFill.INSERT)
     private Long createBy;
 
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 更新者
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
 
     /**
      * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     /**
      * 请求参数
      */
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    @TableField(exist = false)
+    @Column(ignore = true)
     private Map<String, Object> params = new HashMap<>();
 
 }

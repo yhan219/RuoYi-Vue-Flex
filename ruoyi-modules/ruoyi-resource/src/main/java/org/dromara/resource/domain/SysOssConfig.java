@@ -1,7 +1,7 @@
 package org.dromara.resource.domain;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dromara.common.mybatis.core.domain.BaseEntity;
@@ -13,13 +13,13 @@ import org.dromara.common.mybatis.core.domain.BaseEntity;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("sys_oss_config")
+@Table("sys_oss_config")
 public class SysOssConfig extends BaseEntity {
 
     /**
      * 主建
      */
-    @TableId(value = "oss_config_id")
+    @Id
     private Long ossConfigId;
 
     /**

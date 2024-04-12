@@ -1,8 +1,7 @@
 package org.dromara.system.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.CacheNames;
 import org.dromara.common.core.exception.ServiceException;
@@ -21,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static org.dromara.system.domain.table.SysDictDataTableDef.SYS_DICT_DATA;
+
 /**
  * 字典 业务层处理
  *
@@ -34,8 +35,8 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
 
     @Override
     public TableDataInfo<SysDictDataVo> selectPageDictDataList(SysDictDataBo dictData, PageQuery pageQuery) {
-        LambdaQueryWrapper<SysDictData> lqw = buildQueryWrapper(dictData);
-        Page<SysDictDataVo> page = baseMapper.selectVoPage(pageQuery.build(), lqw);
+        QueryWrapper lqw = buildQueryWrapper(dictData);
+        Page<SysDictDataVo> page = baseMapper.paginateAs(pageQuery, lqw, SysDictDataVo.class);
         return TableDataInfo.build(page);
     }
 
@@ -47,17 +48,17 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
      */
     @Override
     public List<SysDictDataVo> selectDictDataList(SysDictDataBo dictData) {
-        LambdaQueryWrapper<SysDictData> lqw = buildQueryWrapper(dictData);
-        return baseMapper.selectVoList(lqw);
+        QueryWrapper lqw = buildQueryWrapper(dictData);
+        return baseMapper.selectListByQueryAs(lqw, SysDictDataVo.class);
     }
 
-    private LambdaQueryWrapper<SysDictData> buildQueryWrapper(SysDictDataBo bo) {
-        LambdaQueryWrapper<SysDictData> lqw = Wrappers.lambdaQuery();
-        lqw.eq(bo.getDictSort() != null, SysDictData::getDictSort, bo.getDictSort());
-        lqw.like(StringUtils.isNotBlank(bo.getDictLabel()), SysDictData::getDictLabel, bo.getDictLabel());
-        lqw.eq(StringUtils.isNotBlank(bo.getDictType()), SysDictData::getDictType, bo.getDictType());
-        lqw.orderByAsc(SysDictData::getDictSort);
-        return lqw;
+    private QueryWrapper buildQueryWrapper(SysDictDataBo bo) {
+        return QueryWrapper.create()
+            .from(SYS_DICT_DATA)
+            .where(SYS_DICT_DATA.DICT_SORT.eq(bo.getDictSort()))
+            .and(SYS_DICT_DATA.DICT_LABEL.like(bo.getDictLabel()))
+            .and(SYS_DICT_DATA.DICT_TYPE.eq(bo.getDictType()))
+            .orderBy(SYS_DICT_DATA.DICT_SORT, true);
     }
 
     /**
@@ -69,10 +70,11 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
      */
     @Override
     public String selectDictLabel(String dictType, String dictValue) {
-        return baseMapper.selectOne(new LambdaQueryWrapper<SysDictData>()
-                .select(SysDictData::getDictLabel)
-                .eq(SysDictData::getDictType, dictType)
-                .eq(SysDictData::getDictValue, dictValue))
+        return baseMapper.selectOneByQuery(QueryWrapper.create()
+                .select(SYS_DICT_DATA.DICT_LABEL)
+                .from(SYS_DICT_DATA)
+                .where(SYS_DICT_DATA.DICT_TYPE.eq(dictType))
+                .and(SYS_DICT_DATA.DICT_VALUE.eq(dictValue)))
             .getDictLabel();
     }
 
@@ -84,7 +86,7 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
      */
     @Override
     public SysDictDataVo selectDictDataById(Long dictCode) {
-        return baseMapper.selectVoById(dictCode);
+        return baseMapper.selectOneWithRelationsByIdAs(dictCode, SysDictDataVo.class);
     }
 
     /**
@@ -95,7 +97,7 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
     @Override
     public void deleteDictDataByIds(Long[] dictCodes) {
         for (Long dictCode : dictCodes) {
-            SysDictData data = baseMapper.selectById(dictCode);
+            SysDictData data = baseMapper.selectOneById(dictCode);
             baseMapper.deleteById(dictCode);
             CacheUtils.evict(CacheNames.SYS_DICT, data.getDictType());
         }
@@ -111,7 +113,7 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
     @Override
     public List<SysDictDataVo> insertDictData(SysDictDataBo bo) {
         SysDictData data = MapstructUtils.convert(bo, SysDictData.class);
-        int row = baseMapper.insert(data);
+        int row = baseMapper.insert(data,true);
         if (row > 0) {
             return baseMapper.selectDictDataByType(data.getDictType());
         }
@@ -128,7 +130,7 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
     @Override
     public List<SysDictDataVo> updateDictData(SysDictDataBo bo) {
         SysDictData data = MapstructUtils.convert(bo, SysDictData.class);
-        int row = baseMapper.updateById(data);
+        int row = baseMapper.update(data);
         if (row > 0) {
             return baseMapper.selectDictDataByType(data.getDictType());
         }

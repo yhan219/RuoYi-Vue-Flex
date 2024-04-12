@@ -1,10 +1,10 @@
 package org.dromara.system.domain;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
+import org.dromara.common.tenant.core.TenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.dromara.common.tenant.core.TenantEntity;
 
 
 /**
@@ -14,13 +14,13 @@ import org.dromara.common.tenant.core.TenantEntity;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("sys_notice")
+@Table("sys_notice")
 public class SysNotice extends TenantEntity {
 
     /**
      * 公告ID
      */
-    @TableId(value = "notice_id")
+    @Id
     private Long noticeId;
 
     /**
