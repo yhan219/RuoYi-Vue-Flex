@@ -5,33 +5,33 @@
 
 # 简介
 
-[![码云Gitee](https://gitee.com/yhan219/ruoyi-vue-flex/badge/star.svg?theme=blue)](https://gitee.com/yhan219/ruoyi-vue-flex)
-[![GitHub](https://img.shields.io/github/stars/yhan219/ruoyi-vue-flex.svg?style=social&label=Stars)](https://github.com/yhan219/ruoyi-vue-flex)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://gitee.com/yhan219/ruoyi-vue-flex/blob/mybatis-flex/LICENSE)
+[![码云Gitee](https://gitee.com/yhan219/ruoyi-vue-flex/badge/star.svg?theme=blue)](https://gitee.com/yhan219/RuoYi-Vue-Flex)
+[![GitHub](https://img.shields.io/github/stars/yhan219/RuoYi-Vue-Flex.svg?style=social&label=Stars)](https://github.com/yhan219/RuoYi-Vue-Flex)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://gitee.com/yhan219/RuoYi-Vue-Flex/blob/mybatis-flex/LICENSE)
 <br>
-[![ruoyi-vue-flex](https://img.shields.io/badge/ruoyi_vue_flex-5.1.2-success.svg)](https://gitee.com/yhan219/ruoyi-vue-flex)
+[![RuoYi-Vue-Flex](https://img.shields.io/badge/ruoyi_vue_flex-5.1.2-success.svg)](https://gitee.com/yhan219/RuoYi-Vue-Flex)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1-blue.svg)]()
 [![JDK-17](https://img.shields.io/badge/JDK-17-green.svg)]()
 [![JDK-21](https://img.shields.io/badge/JDK-21-green.svg)]()
 
 
-ruoyi-vue-flex是基于[ruoyi-vue-plus 5.X](https://gitee.com/dromara/RuoYi-Vue-Plus/tree/5.X/)分支的一个快速开发框架。
+RuoYi-Vue-Flex是基于[RuoYi-Vue-Plus 5.X](https://gitee.com/dromara/RuoYi-Vue-Plus/tree/5.X/)分支的一个快速开发框架。
 
 RuoYi-Vue-Plus 是重写 RuoYi-Vue 针对 `分布式集群与多租户` 场景全方位升级(不兼容原框架)
 
-ruoyi-vue-flex将ruoyi-vue-plus中使用的mybatis-plus替换为mybatis-flex,并根据两个ORM框架使用的不同修改了部分逻辑。底层完全重写。
+RuoYi-Vue-Flex将RuoYi-Vue-Plus中使用的mybatis-plus替换为mybatis-flex,并根据两个ORM框架使用的不同修改了部分逻辑。底层完全重写。
 
-**ruoyi-vue-flex与ruoyi-vue-plus功能完全相同。**
+**RuoYi-Vue-Flex与RuoYi-Vue-Plus功能完全相同。**
 
-ruoyi-vue-flex将定期同步ruoyi-vue-plus，非冲突功能每天升级，冲突功能最迟不超过一周完成升级。
+RuoYi-Vue-Flex将定期同步RuoYi-Vue-Plus，非冲突功能每天升级，冲突功能最迟不超过一周完成升级。
 
-另有cloud版[ruoyi-cloud-flex](https://gitee.com/yhan219/ruoyi-cloud-flex)欢迎使用
+另有cloud版[RuoYi-Cloud-Flex](https://gitee.com/yhan219/ruoyi-cloud-flex)欢迎使用
 
 
 # 版本
-与ruoyi-vue-plus保持一致，当前版本`5.1.2`
+与RuoYi-Vue-Plus保持一致，当前版本`5.1.2`
 
-# 与ruoyi-vue-plus的差异
+# 与RuoYi-Vue-Plus的差异
 ## 前端框架差异
 默认使用[ruoyi-plus-vben](https://gitee.com/dapppp/ruoyi-plus-vben)，可在配置文件中修改为[plus-ui](https://gitee.com/JavaLionLi/plus-ui)
 ```
@@ -56,11 +56,11 @@ gen:
         return paginateAs(pageQuery, queryWrapper, DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "r.create_by"));
     }
 ```
-> 注：尝试写过拦截器以达到用法完全相同的目的，可惜拦截器功能和mybatis flex的插件不兼容，使用了数据权限插件，则无法使用mybatis flex的多租户插件等。如果你有更好的方法，欢迎pr
+> 注：尝试写过拦截器以达到用法完全相同的目的，可惜拦截器功能和MyBatis-Flex的插件不兼容，使用了数据权限插件，则无法使用MyBatis-Flex的多租户插件等。如果你有更好的方法，欢迎pr
 
 ## 忽略租户写法差异
 - 配置中的差异：
-  原写法： 在yml中配置忽略的表，mybatis-flex不支持,但mybatis-flex会默认忽略没有多租户字段的表
+  原写法： 在yml中配置忽略的表，MyBatis-Flex不支持,但MyBatis-Flex会默认忽略没有多租户字段的表
 - 代码中的差异：
   原写法:在mapper中配置注解：
 ```java
@@ -74,9 +74,9 @@ TenantHelper.ignore(() -> baseMapper.selectTenantUserByUserName(userName, tenant
 ```
 
 ## 特别鸣谢
-[ruoyi-vue-plus](https://gitee.com/dromara/RuoYi-Vue-Plus/tree/5.X/)
+[RuoYi-Vue-Plus](https://gitee.com/dromara/RuoYi-Vue-Plus/tree/5.X/)
 
-[mybatis-flex](https://gitee.com/mybatis-flex/mybatis-flex)
+[MyBatis-Flex](https://gitee.com/mybatis-flex/mybatis-flex)
 
 [ruoyi-plus-vben](https://gitee.com/dapppp/ruoyi-plus-vben)
 
