@@ -5,7 +5,7 @@
 
 # 简介
 
-[![码云Gitee](https://gitee.com/yhan219/ruoyi-vue-flex/badge/star.svg?theme=blue)](https://gitee.com/yhan219/RuoYi-Vue-Flex)
+[![码云Gitee](https://gitee.com/yhan219/ruoyi-vue-flex/badge/star.svg?theme=blue)](https://gitee.com/yhan219/ruoyi-vue-flex)
 [![GitHub](https://img.shields.io/github/stars/yhan219/RuoYi-Vue-Flex.svg?style=social&label=Stars)](https://github.com/yhan219/RuoYi-Vue-Flex)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://gitee.com/yhan219/RuoYi-Vue-Flex/blob/mybatis-flex/LICENSE)
 <br>
