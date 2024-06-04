@@ -9,6 +9,7 @@ import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.system.domain.SysNotice;
+import org.dromara.system.domain.SysUser;
 import org.dromara.system.domain.bo.SysNoticeBo;
 import org.dromara.system.domain.vo.SysNoticeVo;
 import org.dromara.system.domain.vo.SysUserVo;
@@ -69,8 +70,11 @@ public class SysNoticeServiceImpl implements ISysNoticeService {
             .where(SYS_NOTICE.NOTICE_TITLE.like(bo.getNoticeTitle()))
             .and(SYS_NOTICE.NOTICE_TYPE.eq(bo.getNoticeType()));
         if (StringUtils.isNotBlank(bo.getCreateByName())) {
-            SysUserVo sysUser = userMapper.selectUserByUserName(bo.getCreateByName());
-            queryWrapper.and(SYS_NOTICE.CREATE_BY.eq(ObjectUtil.isNotNull(sysUser) ? sysUser.getUserId() : null));
+            SysUserVo sysUser = userMapper.selectVoOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserName, bo.getCreateByName()));
+            lqw.eq(SysNotice::getCreateBy, ObjectUtil.isNotNull(sysUser) ? sysUser.getUserId() : null);
+
+            //SysUserVo sysUser = userMapper.selectUserByUserName(bo.getCreateByName());
+            // queryWrapper.and(SYS_NOTICE.CREATE_BY.eq(ObjectUtil.isNotNull(sysUser) ? sysUser.getUserId() : null));
         }
         queryWrapper.orderBy(SYS_NOTICE.NOTICE_ID, true);
         return queryWrapper;

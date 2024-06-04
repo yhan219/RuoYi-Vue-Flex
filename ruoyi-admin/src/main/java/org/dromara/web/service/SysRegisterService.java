@@ -61,11 +61,15 @@ public class SysRegisterService {
         sysUser.setPassword(BCrypt.hashpw(password));
         sysUser.setUserType(userType);
 
+        boolean exist = TenantHelper.dynamic(tenantId, () -> {
+            return userMapper.exists(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getUserName, sysUser.getUserName()));
+        });
 
-        boolean exist = TenantHelper.dynamic(tenantId, () -> userMapper.selectCountByQuery(QueryWrapper.create()
-             .from(SYS_USER)
-             .and(SYS_USER.USER_NAME.eq(sysUser.getUserName()))
-             .and(SYS_USER.USER_ID.ne(sysUser.getUserId()))) != 0);
+        //  boolean exist = TenantHelper.dynamic(tenantId, () -> userMapper.selectCountByQuery(QueryWrapper.create()
+        //              .from(SYS_USER)
+        //              .and(SYS_USER.USER_NAME.eq(sysUser.getUserName()))
+        //              .and(SYS_USER.USER_ID.ne(sysUser.getUserId()))) != 0);
         if (exist) {
             throw new UserException("user.register.save.error", username);
         }
@@ -84,7 +88,7 @@ public class SysRegisterService {
      * @param uuid     唯一标识
      */
     public void validateCaptcha(String tenantId, String username, String code, String uuid) {
-        String verifyKey = GlobalConstants.CAPTCHA_CODE_KEY + StringUtils.defaultString(uuid, "");
+        String verifyKey = GlobalConstants.CAPTCHA_CODE_KEY + StringUtils.blankToDefault(uuid, "");
         String captcha = RedisUtils.getCacheObject(verifyKey);
         RedisUtils.deleteObject(verifyKey);
         if (captcha == null) {

@@ -77,6 +77,18 @@ public class SysDeptServiceImpl implements ISysDeptService, DeptService {
     }
 
     private QueryWrapper buildQueryWrapper(SysDeptBo bo) {
+        LambdaQueryWrapper<SysDept> lqw = Wrappers.lambdaQuery();
+        lqw.eq(SysDept::getDelFlag, "0");
+        lqw.eq(ObjectUtil.isNotNull(bo.getDeptId()), SysDept::getDeptId, bo.getDeptId());
+        lqw.eq(ObjectUtil.isNotNull(bo.getParentId()), SysDept::getParentId, bo.getParentId());
+        lqw.like(StringUtils.isNotBlank(bo.getDeptName()), SysDept::getDeptName, bo.getDeptName());
+        lqw.like(StringUtils.isNotBlank(bo.getDeptCategory()), SysDept::getDeptCategory, bo.getDeptCategory());
+        lqw.eq(StringUtils.isNotBlank(bo.getStatus()), SysDept::getStatus, bo.getStatus());
+        lqw.orderByAsc(SysDept::getAncestors);
+        lqw.orderByAsc(SysDept::getParentId);
+        lqw.orderByAsc(SysDept::getOrderNum);
+        lqw.orderByAsc(SysDept::getDeptId);
+        return lqw;
         return QueryWrapper.create()
             .select()
             .from(SYS_DEPT)
@@ -139,6 +151,14 @@ public class SysDeptServiceImpl implements ISysDeptService, DeptService {
             SysDeptVo.class);
         dept.setParentName(ObjectUtil.isNotNull(parentDept) ? parentDept.getDeptName() : null);
         return dept;
+    }
+
+    @Override
+    public List<SysDeptVo> selectDeptByIds(List<Long> deptIds) {
+        return baseMapper.selectDeptList(new LambdaQueryWrapper<SysDept>()
+            .select(SysDept::getDeptId, SysDept::getDeptName, SysDept::getLeader)
+            .eq(SysDept::getStatus, UserConstants.DEPT_NORMAL)
+            .in(CollUtil.isNotEmpty(deptIds), SysDept::getDeptId, deptIds));
     }
 
     /**
@@ -211,6 +231,20 @@ public class SysDeptServiceImpl implements ISysDeptService, DeptService {
     }
 
     /**
+     * 校验部门类别编码是否唯一
+     *
+     * @param dept 部门信息
+     * @return 结果
+     */
+    @Override
+    public boolean checkDeptCategoryUnique(SysDeptBo dept) {
+        boolean exist = baseMapper.exists(new LambdaQueryWrapper<SysDept>()
+            .eq(SysDept::getDeptCategory, dept.getDeptCategory())
+            .ne(ObjectUtil.isNotNull(dept.getDeptId()), SysDept::getDeptId, dept.getDeptId()));
+        return !exist;
+    }
+
+    /**
      * 校验部门是否有数据权限
      *
      * @param deptId 部门id
@@ -223,9 +257,7 @@ public class SysDeptServiceImpl implements ISysDeptService, DeptService {
         if (LoginHelper.isSuperAdmin()) {
             return;
         }
-        SysDeptVo dept = baseMapper.selectDeptById(deptId);
-
-        if (ObjectUtil.isNull(dept)) {
+        if (baseMapper.countDeptById(deptId) == 0) {
             throw new ServiceException("没有权限访问部门数据！");
         }
     }

@@ -37,6 +37,10 @@ public interface SysDeptMapper extends BaseMapperPlus<SysDept> {
         return selectOneByQueryAs(queryWrapper, SysDeptVo.class, DataColumn.of("deptName", "dept_id"));
     }
 
+    @DataPermission({
+        @DataColumn(key = "deptName", value = "dept_id")
+    })
+    long countDeptById(Long deptId);
 
     /**
      * 根据角色ID查询部门树信息

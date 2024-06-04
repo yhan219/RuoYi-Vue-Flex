@@ -116,10 +116,10 @@ public class SysUserVo implements Serializable {
     private Date createTime;
 
     /**
-     * 部门对象
+     * 部门名
      */
-    @RelationOneToOne(selfField = "deptId", joinSelfColumn = "dept_id", targetField = "deptId", joinTargetColumn = "dept_id", targetTable = "sys_dept")
-    private SysDeptVo dept;
+    @Translation(type = TransConstant.DEPT_ID_TO_NAME, mapper = "deptId")
+    private String deptName;
 
     /**
      * 角色对象

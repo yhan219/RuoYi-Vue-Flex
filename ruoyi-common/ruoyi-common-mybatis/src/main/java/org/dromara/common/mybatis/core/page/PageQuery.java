@@ -106,4 +106,8 @@ public class PageQuery implements Serializable {
     }
 
 
+    public Integer getFirstNum() {
+        return (pageNum - 1) * pageSize;
+    }
+
 }

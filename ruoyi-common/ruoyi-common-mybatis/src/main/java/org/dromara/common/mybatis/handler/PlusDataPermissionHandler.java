@@ -16,7 +16,13 @@ import org.dromara.common.mybatis.annotation.DataPermission;
 import org.dromara.common.mybatis.enums.DataScopeType;
 import org.dromara.common.mybatis.helper.DataPermissionHelper;
 import org.dromara.common.satoken.utils.LoginHelper;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.core.type.ClassMetadata;
+import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.expression.BeanResolver;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.ParserContext;
@@ -50,6 +56,10 @@ public class PlusDataPermissionHandler {
      */
     private final BeanResolver beanResolver = new BeanFactoryResolver(SpringUtils.getBeanFactory());
 
+    public PlusDataPermissionHandler(String mapperPackage) {
+        scanMapperClasses(mapperPackage);
+    }
+
 
     public void handlerDataPermission(DataPermission dataPermission, QueryWrapper queryWrapper, boolean isSelect) {
         if (dataPermission == null) {
@@ -68,7 +78,7 @@ public class PlusDataPermissionHandler {
         if (LoginHelper.isSuperAdmin() || LoginHelper.isTenantAdmin()) {
             return;
         }
-        String dataFilterSql = buildDataFilter(dataColumns, isSelect);
+        String dataFilterSql = buildDataFilter(dataPermission.value(), isSelect);
         if (StringUtils.isBlank(dataFilterSql)) {
             return;
         }
@@ -140,4 +150,10 @@ public class PlusDataPermissionHandler {
     }
 
 
+    /**
+     * 是否无效
+     */
+    public boolean invalid(String mapperId) {
+        return getDataPermission(mapperId) == null;
+    }
 }

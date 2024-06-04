@@ -24,7 +24,7 @@ import static org.dromara.system.domain.table.SysUserTableDef.SYS_USER;
  */
 public interface SysRoleMapper extends BaseMapperPlus<SysRole> {
 
-    default Page<SysRoleVo> selectPageRoleList(@Param("pageQuery") PageQuery pageQuery, QueryWrapper queryWrapper){
+    default Page<SysRoleVo> selectPageRoleList(@Param("pageQuery") PageQuery pageQuery, QueryWrapper queryWrapper) {
         selectRoleVo(queryWrapper);
         return paginateAs(pageQuery, queryWrapper, SysRoleVo.class, DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "r.create_by"));
     }
@@ -50,7 +50,7 @@ public interface SysRoleMapper extends BaseMapperPlus<SysRole> {
     }
 
 
-    default SysRoleVo selectRoleById(@Param("roleId") Long roleId){
+    default SysRoleVo selectRoleById(@Param("roleId") Long roleId) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_ROLE.ROLE_ID.eq(roleId));
         selectRoleVo(queryWrapper);
         return selectOneByQueryAs(queryWrapper, SysRoleVo.class, DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "r.create_by"));
@@ -62,7 +62,7 @@ public interface SysRoleMapper extends BaseMapperPlus<SysRole> {
      * @param userId 用户ID
      * @return 角色列表
      */
-    default List<SysRoleVo> selectRolePermissionByUserId(Long userId){
+    default List<SysRoleVo> selectRolePermissionByUserId(Long userId) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER_ROLE.USER_ID.eq(userId));
         selectRoleVo(queryWrapper);
         return selectListByQueryAs(queryWrapper, SysRoleVo.class);
@@ -75,7 +75,7 @@ public interface SysRoleMapper extends BaseMapperPlus<SysRole> {
      * @param userId 用户ID
      * @return 选中角色ID列表
      */
-    default List<Long> selectRoleListByUserId(Long userId){
+    default List<Long> selectRoleListByUserId(Long userId) {
         QueryWrapper queryWrapper = QueryWrapper.create().select(SYS_ROLE.ROLE_ID).from(SYS_ROLE.as("r"))
             .leftJoin(SYS_USER_ROLE).as("sur").on(SYS_USER_ROLE.ROLE_ID.eq(SYS_ROLE.ROLE_ID))
             .leftJoin(SYS_USER).as("u").on(SYS_USER.USER_ID.eq(SYS_USER_ROLE.USER_ID))
@@ -86,11 +86,13 @@ public interface SysRoleMapper extends BaseMapperPlus<SysRole> {
     /**
      * 根据用户ID查询角色
      *
-     * @param userName 用户名
+     * @param userId 用户ID
      * @return 角色列表
      */
-    default List<SysRoleVo> selectRolesByUserName(String userName){
-        QueryWrapper queryWrapper = QueryWrapper.create().select(SYS_ROLE.ROLE_ID,SYS_ROLE.ROLE_NAME,SYS_ROLE.ROLE_KEY,SYS_ROLE.ROLE_SORT).from(SYS_ROLE.as("r"))
+    List<SysRoleVo> selectRolesByUserId(Long userId);
+
+    default List<SysRoleVo> selectRolesByUserName(String userName) {
+        QueryWrapper queryWrapper = QueryWrapper.create().select(SYS_ROLE.ROLE_ID, SYS_ROLE.ROLE_NAME, SYS_ROLE.ROLE_KEY, SYS_ROLE.ROLE_SORT).from(SYS_ROLE.as("r"))
             .leftJoin(SYS_USER_ROLE).as("sur").on(SYS_USER_ROLE.ROLE_ID.eq(SYS_ROLE.ROLE_ID))
             .leftJoin(SYS_USER).as("u").on(SYS_USER.USER_ID.eq(SYS_USER_ROLE.USER_ID))
             .where(SYS_USER.USER_NAME.eq(userName));

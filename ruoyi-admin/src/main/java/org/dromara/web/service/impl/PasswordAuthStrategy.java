@@ -26,6 +26,7 @@ import org.dromara.common.tenant.helper.TenantHelper;
 import org.dromara.common.web.config.properties.CaptchaProperties;
 import org.dromara.system.domain.SysClient;
 import org.dromara.system.domain.SysUser;
+import org.dromara.system.domain.vo.SysClientVo;
 import org.dromara.system.domain.vo.SysUserVo;
 import org.dromara.system.mapper.SysUserMapper;
 import org.dromara.web.domain.vo.LoginVo;
@@ -50,7 +51,7 @@ public class PasswordAuthStrategy implements IAuthStrategy {
     private final SysUserMapper userMapper;
 
     @Override
-    public LoginVo login(String body, SysClient client) {
+    public LoginVo login(String body, SysClientVo client) {
         PasswordLoginBody loginBody = JsonUtils.parseObject(body, PasswordLoginBody.class);
         ValidatorUtils.validate(loginBody);
         String tenantId = loginBody.getTenantId();
@@ -111,11 +112,12 @@ public class PasswordAuthStrategy implements IAuthStrategy {
 
     private SysUserVo loadUserByUsername(String tenantId, String username) {
         return TenantHelper.dynamic(tenantId, () -> {
-            SysUser user = userMapper.selectOneByQuery(
-                QueryWrapper.create()
-                    .select(SYS_USER.USER_NAME, SYS_USER.STATUS)
-                    .from(SYS_USER)
-                    .and(SYS_USER.USER_NAME.eq(username)));
+            SysUserVo user = userMapper.selectVoOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserName, username));
+            // SysUser user = userMapper.selectOneByQuery(
+            //     QueryWrapper.create()
+            //         .select(SYS_USER.USER_NAME, SYS_USER.STATUS)
+            //         .from(SYS_USER)
+            //         .and(SYS_USER.USER_NAME.eq(username)));
             if (ObjectUtil.isNull(user)) {
                 log.info("登录用户：{} 不存在.", username);
                 throw new UserException("user.not.exists", username);
@@ -123,7 +125,7 @@ public class PasswordAuthStrategy implements IAuthStrategy {
                 log.info("登录用户：{} 已被停用.", username);
                 throw new UserException("user.blocked", username);
             }
-            return userMapper.selectUserByUserName(username);
+            return user;
         });
     }
 

@@ -152,7 +152,10 @@ public class SysConfigServiceImpl implements ISysConfigService, ConfigService {
             }
             row = baseMapper.update(config);
         } else {
-            row = baseMapper.updateByQuery(config, QueryWrapper.create().from(SYS_CONFIG).where(SYS_CONFIG.CONFIG_KEY.eq(config.getConfigKey())));
+            CacheUtils.evict(CacheNames.SYS_CONFIG, config.getConfigKey());
+            row = baseMapper.update(config, new LambdaQueryWrapper<SysConfig>()
+                .eq(SysConfig::getConfigKey, config.getConfigKey()));
+            // row = baseMapper.updateByQuery(config, QueryWrapper.create().from(SYS_CONFIG).where(SYS_CONFIG.CONFIG_KEY.eq(config.getConfigKey())));
         }
         if (row > 0) {
             return config.getConfigValue();

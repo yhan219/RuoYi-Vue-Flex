@@ -8,6 +8,7 @@ import org.dromara.common.mybatis.annotation.DataPermission;
 import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.system.domain.SysUser;
+import org.dromara.system.domain.vo.SysUserExportVo;
 import org.dromara.system.domain.vo.SysUserVo;
 
 import java.util.List;
@@ -40,6 +41,11 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
             )
         );
     }
+    @DataPermission({
+        @DataColumn(key = "deptName", value = "d.dept_id"),
+        @DataColumn(key = "userName", value = "u.user_id")
+    })
+    List<SysUserExportVo> selectUserExportList(@Param(Constants.WRAPPER) Wrapper<SysUser> queryWrapper);
 
     /**
      * 根据条件分页查询已配用户角色列表
@@ -51,51 +57,24 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser> {
         return this.paginateAs(page, queryWrapper, SysUserVo.class, DataColumn.of("deptName", "d.dept_id"), DataColumn.of("userName", "u.user_id"));
     }
 
-
     /**
-     * 通过用户名查询用户
+     * 根据条件分页查询未分配用户角色列表
      *
-     * @param userName 用户名
-     * @return 用户对象信息
+     * @param queryWrapper 查询条件
+     * @return 用户信息集合信息
      */
-    default SysUserVo selectUserByUserName(String userName) {
-        QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.USER_NAME.eq(userName));
-        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
-    }
+    @DataPermission({
+        @DataColumn(key = "deptName", value = "d.dept_id"),
+        @DataColumn(key = "userName", value = "u.user_id")
+    })
+    Page<SysUserVo> selectUnallocatedList(@Param("page") Page<SysUser> page, @Param(Constants.WRAPPER) Wrapper<SysUser> queryWrapper);
 
-    /**
-     * 通过手机号查询用户
-     *
-     * @param phonenumber 手机号
-     * @return 用户对象信息
-     */
-    default SysUserVo selectUserByPhonenumber(String phonenumber) {
-        QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.PHONENUMBER.eq(phonenumber));
-        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
-    }
 
-    /**
-     * 通过邮箱查询用户
-     *
-     * @param email 邮箱
-     * @return 用户对象信息
-     */
-    default SysUserVo selectUserByEmail(String email) {
-        QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_USER.EMAIL.eq(email));
-        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class);
-    }
-
-    /**
-     * 通过用户ID查询用户
-     *
-     * @param userId 用户ID
-     * @return 用户对象信息
-     */
-
-    default SysUserVo selectUserById(Long userId) {
-        QueryWrapper queryWrapper = QueryWrapper.create().where(SysUser::getUserId).eq(userId);
-        return selectOneWithRelationsByQueryAs(queryWrapper, SysUserVo.class, DataColumn.of("deptName", "dept_id"), DataColumn.of("userName", "user_id"));
-    }
+    @DataPermission({
+        @DataColumn(key = "deptName", value = "dept_id"),
+        @DataColumn(key = "userName", value = "user_id")
+    })
+    long countUserById(Long userId);
 
 
     default boolean update(UpdateChain<SysUser> updateChain) {

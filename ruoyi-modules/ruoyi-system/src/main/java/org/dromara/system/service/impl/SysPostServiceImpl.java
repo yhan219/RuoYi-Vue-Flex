@@ -7,9 +7,12 @@ import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.mybatis.helper.DataBaseHelper;
+import org.dromara.system.domain.SysDept;
 import org.dromara.system.domain.SysPost;
 import org.dromara.system.domain.bo.SysPostBo;
 import org.dromara.system.domain.vo.SysPostVo;
+import org.dromara.system.mapper.SysDeptMapper;
 import org.dromara.system.mapper.SysPostMapper;
 import org.dromara.system.mapper.SysUserPostMapper;
 import org.dromara.system.service.ISysPostService;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.dromara.system.domain.table.SysPostTableDef.SYS_POST;
 
@@ -30,6 +34,7 @@ import static org.dromara.system.domain.table.SysPostTableDef.SYS_POST;
 public class SysPostServiceImpl implements ISysPostService {
 
     private final SysPostMapper baseMapper;
+    private final SysDeptMapper deptMapper;
     private final SysUserPostMapper userPostMapper;
 
     @Override
@@ -47,16 +52,48 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public List<SysPostVo> selectPostList(SysPostBo post) {
+        return baseMapper.selectVoList(buildQueryWrapper(post));
         QueryWrapper lqw = buildQueryWrapper(post);
         return baseMapper.selectListByQueryAs(lqw, SysPostVo.class);
     }
 
-    private QueryWrapper buildQueryWrapper(SysPostBo bo) {
-        return QueryWrapper.create().from(SYS_POST)
-            .where(SYS_POST.POST_CODE.like(bo.getPostCode()))
-            .and(SYS_POST.POST_NAME.like(bo.getPostName()))
-            .and(SYS_POST.STATUS.eq(bo.getStatus()))
-            .orderBy(SYS_POST.POST_SORT, true);
+    /**
+     * 根据查询条件构建查询包装器
+     *
+     * @param bo 查询条件对象
+     * @return 构建好的查询包装器
+     */
+    private LambdaQueryWrapper<SysPost> buildQueryWrapper(SysPostBo bo) {
+        LambdaQueryWrapper<SysPost> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.isNotBlank(bo.getPostCode()), SysPost::getPostCode, bo.getPostCode())
+            .like(StringUtils.isNotBlank(bo.getPostCategory()), SysPost::getPostCategory, bo.getPostCategory())
+            .like(StringUtils.isNotBlank(bo.getPostName()), SysPost::getPostName, bo.getPostName())
+            .eq(StringUtils.isNotBlank(bo.getStatus()), SysPost::getStatus, bo.getStatus())
+            .orderByAsc(SysPost::getPostSort);
+        if (ObjectUtil.isNotNull(bo.getDeptId())) {
+            //优先单部门搜索
+            wrapper.eq(SysPost::getDeptId, bo.getDeptId());
+        } else if (ObjectUtil.isNotNull(bo.getBelongDeptId())) {
+            //部门树搜索
+            wrapper.and(x -> {
+                List<Long> deptIds = deptMapper.selectList(new LambdaQueryWrapper<SysDept>()
+                        .select(SysDept::getDeptId)
+                        .apply(DataBaseHelper.findInSet(bo.getBelongDeptId(), "ancestors")))
+                    .stream()
+                    .map(SysDept::getDeptId)
+                    .collect(Collectors.toList());
+                deptIds.add(bo.getBelongDeptId());
+                x.in(SysPost::getDeptId, deptIds);
+            });
+        }
+
+        ///  return QueryWrapper.create().from(SYS_POST)
+        //             .where(SYS_POST.POST_CODE.like(bo.getPostCode()))
+        //             .and(SYS_POST.POST_NAME.like(bo.getPostName()))
+        //             .and(SYS_POST.STATUS.eq(bo.getStatus()))
+        //             .orderBy(SYS_POST.POST_SORT, true);
+        //     }
+        return wrapper;
     }
 
     /**
@@ -88,7 +125,22 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public List<Long> selectPostListByUserId(Long userId) {
-        return baseMapper.selectPostListByUserId(userId);
+        List<SysPostVo> list = baseMapper.selectPostsByUserId(userId);
+        return StreamUtils.toList(list, SysPostVo::getPostId);
+    }
+
+    /**
+     * 通过岗位ID串查询岗位
+     *
+     * @param postIds 岗位id串
+     * @return 岗位列表信息
+     */
+    @Override
+    public List<SysPostVo> selectPostByIds(List<Long> postIds) {
+        return baseMapper.selectVoList(new LambdaQueryWrapper<SysPost>()
+            .select(SysPost::getPostId, SysPost::getPostName, SysPost::getPostCode)
+            .eq(SysPost::getStatus, UserConstants.POST_NORMAL)
+            .in(CollUtil.isNotEmpty(postIds), SysPost::getPostId, postIds));
     }
 
     /**
