@@ -318,7 +318,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
     public int insertUser(SysUserBo user) {
         SysUser sysUser = MapstructUtils.convert(user, SysUser.class);
         // 新增用户信息
-        int rows = baseMapper.insert(sysUser,true);
+        int rows = baseMapper.insert(sysUser, true);
         user.setUserId(sysUser.getUserId());
         // 新增用户岗位关联
         insertUserPost(user, false);
@@ -339,7 +339,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
         user.setUpdateBy(0L);
         SysUser sysUser = MapstructUtils.convert(user, SysUser.class);
         sysUser.setTenantId(tenantId);
-        return baseMapper.insert(sysUser,true) > 0;
+        return baseMapper.insert(sysUser, true) > 0;
     }
 
     /**
@@ -410,7 +410,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
         sysUser.setPhonenumber(user.getPhonenumber());
         sysUser.setEmail(user.getEmail());
         sysUser.setSex(user.getSex());
-        return baseMapper.update(sysUser,true);
+        return baseMapper.update(sysUser, true);
     }
 
     /**
@@ -651,10 +651,10 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
         if (CollUtil.isEmpty(userIds)) {
             return List.of();
         }
-        List<SysUserVo> list = baseMapper.selectVoList(new LambdaQueryWrapper<SysUser>()
+        List<SysUserVo> list = baseMapper.selectListByQueryAs(QueryWrapper.create().from(SysUser.class)
             .select(SysUser::getUserId, SysUser::getUserName, SysUser::getNickName)
             .eq(SysUser::getStatus, UserConstants.USER_NORMAL)
-            .in(CollUtil.isNotEmpty(userIds), SysUser::getUserId, userIds));
+            .in(SysUser::getUserId, userIds), SysUserVo.class);
         return BeanUtil.copyToList(list, UserDTO.class);
     }
 

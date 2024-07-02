@@ -1,11 +1,16 @@
 package org.dromara.workflow.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.dromara.common.core.domain.event.ProcessEvent;
+import org.dromara.common.core.domain.event.ProcessTaskEvent;
+import org.dromara.common.core.enums.BusinessStatusEnum;
+import org.dromara.common.core.service.WorkflowService;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StreamUtils;
+import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
@@ -50,13 +55,7 @@ public class TestLeaveServiceImpl implements ITestLeaveService {
     public TableDataInfo<TestLeaveVo> queryPageList(TestLeaveBo bo, PageQuery pageQuery) {
         QueryWrapper lqw = buildQueryWrapper(bo);
         Page<TestLeaveVo> result = baseMapper.paginateAs(pageQuery.build(), lqw, TestLeaveVo.class);
-        TableDataInfo<TestLeaveVo> build = TableDataInfo.build(result);
-        List<TestLeaveVo> rows = build.getRows();
-        if (CollUtil.isNotEmpty(rows)) {
-            List<String> ids = StreamUtils.toList(rows, e -> String.valueOf(e.getId()));
-            WorkflowUtils.setProcessInstanceListVo(rows, ids, "id");
-        }
-        return build;
+        return TableDataInfo.build(result);
     }
 
     /**
@@ -110,7 +109,7 @@ public class TestLeaveServiceImpl implements ITestLeaveService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteWithValidByIds(Collection<Long> ids) {
         List<String> idList = StreamUtils.toList(ids, String::valueOf);
-        actProcessInstanceService.deleteRunAndHisInstance(idList);
+        workflowService.deleteRunAndHisInstance(idList);
         return baseMapper.deleteBatchByIds(ids) > 0;
     }
 
@@ -124,12 +123,12 @@ public class TestLeaveServiceImpl implements ITestLeaveService {
     @EventListener(condition = "#processEvent.key.startsWith('leave')")
     public void processHandler(ProcessEvent processEvent) {
         log.info("当前任务执行了{}", processEvent.toString());
-        TestLeave testLeave = baseMapper.selectById(Long.valueOf(processEvent.getBusinessKey()));
+        TestLeave testLeave = baseMapper.selectOneById(Long.valueOf(processEvent.getBusinessKey()));
         testLeave.setStatus(processEvent.getStatus());
         if (processEvent.isSubmit()) {
             testLeave.setStatus(BusinessStatusEnum.WAITING.getStatus());
         }
-        baseMapper.updateById(testLeave);
+        baseMapper.update(testLeave);
     }
 
     /**
@@ -145,8 +144,8 @@ public class TestLeaveServiceImpl implements ITestLeaveService {
     @EventListener(condition = "#processTaskEvent.key=='leave1' && #processTaskEvent.taskDefinitionKey=='Activity_14633hx'")
     public void processTaskHandler(ProcessTaskEvent processTaskEvent) {
         log.info("当前任务执行了{}", processTaskEvent.toString());
-        TestLeave testLeave = baseMapper.selectById(Long.valueOf(processTaskEvent.getBusinessKey()));
+        TestLeave testLeave = baseMapper.selectOneById(Long.valueOf(processTaskEvent.getBusinessKey()));
         testLeave.setStatus(BusinessStatusEnum.WAITING.getStatus());
-        baseMapper.updateById(testLeave);
+        baseMapper.update(testLeave);
     }
 }

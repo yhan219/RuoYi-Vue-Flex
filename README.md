@@ -29,7 +29,7 @@ RuoYi-Vue-Flex将定期同步RuoYi-Vue-Plus，非冲突功能每天升级，冲�
 
 
 # 版本
-与RuoYi-Vue-Plus保持一致，当前版本`5.1.2`
+定期与RuoYi-Vue-Plus同步，当前版本`5.2.0`
 
 # 与RuoYi-Vue-Plus的差异
 ## 前端框架差异
@@ -79,6 +79,11 @@ TenantHelper.ignore(() -> baseMapper.selectTenantUserByUserName(userName, tenant
 [MyBatis-Flex](https://gitee.com/mybatis-flex/mybatis-flex)
 
 [ruoyi-plus-vben](https://gitee.com/dapppp/ruoyi-plus-vben)
+
+## 交流群
+QQ群号 797134824
+
+点击链接加入群聊【RuoyiVueFlex交流群】：https://qm.qq.com/q/TRde1WLuiA
 
 ## 预览图
 
