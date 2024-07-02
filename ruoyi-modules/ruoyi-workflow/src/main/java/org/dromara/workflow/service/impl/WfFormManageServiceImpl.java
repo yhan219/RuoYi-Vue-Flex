@@ -1,23 +1,21 @@
 package org.dromara.workflow.service.impl;
 
-import org.dromara.common.core.utils.MapstructUtils;
-import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
-import org.dromara.common.mybatis.core.page.PageQuery;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
+import org.dromara.common.core.utils.MapstructUtils;
+import org.dromara.common.mybatis.core.page.PageQuery;
+import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.workflow.common.enums.FormTypeEnum;
-import org.springframework.stereotype.Service;
+import org.dromara.workflow.domain.WfFormManage;
 import org.dromara.workflow.domain.bo.WfFormManageBo;
 import org.dromara.workflow.domain.vo.WfFormManageVo;
-import org.dromara.workflow.domain.WfFormManage;
 import org.dromara.workflow.mapper.WfFormManageMapper;
 import org.dromara.workflow.service.IWfFormManageService;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * 表单管理Service业务层处理
@@ -36,12 +34,12 @@ public class WfFormManageServiceImpl implements IWfFormManageService {
      */
     @Override
     public WfFormManageVo queryById(Long id) {
-        return baseMapper.selectVoById(id);
+        return baseMapper.selectOneByQueryAs(QueryWrapper.create().eq(WfFormManage::getId, id), WfFormManageVo.class);
     }
 
     @Override
     public List<WfFormManageVo> queryByIds(List<Long> ids) {
-        return baseMapper.selectVoBatchIds(ids);
+        return baseMapper.selectListByQueryAs(QueryWrapper.create().in(WfFormManage::getId, ids), WfFormManageVo.class);
     }
 
     /**
@@ -49,14 +47,14 @@ public class WfFormManageServiceImpl implements IWfFormManageService {
      */
     @Override
     public TableDataInfo<WfFormManageVo> queryPageList(WfFormManageBo bo, PageQuery pageQuery) {
-        LambdaQueryWrapper<WfFormManage> lqw = buildQueryWrapper(bo);
-        Page<WfFormManageVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
+        QueryWrapper lqw = buildQueryWrapper(bo);
+        Page<WfFormManageVo> result = baseMapper.paginateAs(pageQuery.build(), lqw, WfFormManageVo.class);
         return TableDataInfo.build(result);
     }
 
     @Override
     public List<WfFormManageVo> selectList() {
-        List<WfFormManageVo> wfFormManageVos = baseMapper.selectVoList(new LambdaQueryWrapper<WfFormManage>().orderByDesc(WfFormManage::getUpdateTime));
+        List<WfFormManageVo> wfFormManageVos = baseMapper.selectListByQueryAs(QueryWrapper.create().orderBy(WfFormManage::getUpdateTime, false), WfFormManageVo.class);
         for (WfFormManageVo wfFormManageVo : wfFormManageVos) {
             wfFormManageVo.setFormTypeName(FormTypeEnum.findByType(wfFormManageVo.getFormType()));
         }
@@ -68,14 +66,14 @@ public class WfFormManageServiceImpl implements IWfFormManageService {
      */
     @Override
     public List<WfFormManageVo> queryList(WfFormManageBo bo) {
-        LambdaQueryWrapper<WfFormManage> lqw = buildQueryWrapper(bo);
-        return baseMapper.selectVoList(lqw);
+        QueryWrapper lqw = buildQueryWrapper(bo);
+        return baseMapper.selectListByQueryAs(lqw, WfFormManageVo.class);
     }
 
-    private LambdaQueryWrapper<WfFormManage> buildQueryWrapper(WfFormManageBo bo) {
-        LambdaQueryWrapper<WfFormManage> lqw = Wrappers.lambdaQuery();
-        lqw.like(StringUtils.isNotBlank(bo.getFormName()), WfFormManage::getFormName, bo.getFormName());
-        lqw.eq(StringUtils.isNotBlank(bo.getFormType()), WfFormManage::getFormType, bo.getFormType());
+    private QueryWrapper buildQueryWrapper(WfFormManageBo bo) {
+        QueryWrapper lqw = QueryWrapper.create();
+        lqw.like(WfFormManage::getFormName, bo.getFormName());
+        lqw.eq(WfFormManage::getFormType, bo.getFormType());
         return lqw;
     }
 
@@ -98,7 +96,7 @@ public class WfFormManageServiceImpl implements IWfFormManageService {
     @Override
     public Boolean updateByBo(WfFormManageBo bo) {
         WfFormManage update = MapstructUtils.convert(bo, WfFormManage.class);
-        return baseMapper.updateById(update) > 0;
+        return baseMapper.update(update) > 0;
     }
 
     /**
@@ -106,6 +104,6 @@ public class WfFormManageServiceImpl implements IWfFormManageService {
      */
     @Override
     public Boolean deleteByIds(Collection<Long> ids) {
-        return baseMapper.deleteBatchIds(ids) > 0;
+        return baseMapper.deleteBatchByIds(ids) > 0;
     }
 }

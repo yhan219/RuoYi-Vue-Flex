@@ -104,7 +104,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
         }
         queryWrapper.orderBy(SYS_USER.USER_ID, true);
         if (StringUtils.isNotBlank(user.getExcludeUserIds())) {
-            wrapper.notIn("u.user_id", StringUtils.splitList(user.getExcludeUserIds()));
+            queryWrapper.notIn("u.user_id", StringUtils.splitList(user.getExcludeUserIds()));
         }
         return queryWrapper;
     }
@@ -154,7 +154,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
             .and(SYS_USER.USER_NAME.like(user.getUserName()))
             .and(SYS_USER.PHONENUMBER.eq(user.getPhonenumber()))
             .orderBy(SYS_USER.USER_ID, true);
-        Page<SysUserVo> page = baseMapper.selectAllocatedList(pageQuery, queryWrapper);
+        Page<SysUserVo> page = baseMapper.selectUnallocatedList(pageQuery, queryWrapper);
         return TableDataInfo.build(page);
     }
 
@@ -166,7 +166,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
      */
     @Override
     public SysUserVo selectUserByUserName(String userName) {
-        return baseMapper.selectVoOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserName, userName));
+        return baseMapper.selectOneByQueryAs(QueryWrapper.create().from(SYS_USER).where(SYS_USER.USER_NAME.eq(userName)), SysUserVo.class);
     }
 
     /**
@@ -177,7 +177,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
      */
     @Override
     public SysUserVo selectUserByPhonenumber(String phonenumber) {
-        return baseMapper.selectVoOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getPhonenumber, phonenumber));
+        return baseMapper.selectOneByQueryAs(QueryWrapper.create().from(SYS_USER).where(SYS_USER.PHONENUMBER.eq(phonenumber)), SysUserVo.class);
     }
 
     /**
@@ -188,7 +188,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
      */
     @Override
     public SysUserVo selectUserById(Long userId) {
-        SysUserVo user = baseMapper.selectVoById(userId);
+        SysUserVo user = baseMapper.selectOneByQueryAs(QueryWrapper.create().from(SYS_USER).where(SYS_USER.USER_ID.eq(userId)), SysUserVo.class);
         if (ObjectUtil.isNull(user)) {
             return user;
         }
@@ -205,11 +205,11 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
      */
     @Override
     public List<SysUserVo> selectUserByIds(List<Long> userIds, Long deptId) {
-        return baseMapper.selectUserList(new LambdaQueryWrapper<SysUser>()
-            .select(SysUser::getUserId, SysUser::getUserName, SysUser::getNickName)
-            .eq(SysUser::getStatus, UserConstants.USER_NORMAL)
-            .eq(ObjectUtil.isNotNull(deptId), SysUser::getDeptId, deptId)
-            .in(CollUtil.isNotEmpty(userIds), SysUser::getUserId, userIds));
+        return baseMapper.selectListByQueryAs(QueryWrapper.create().from(SYS_USER)
+            .select(SYS_USER.USER_ID, SYS_USER.USER_NAME, SYS_USER.NICK_NAME)
+            .where(SYS_USER.STATUS.eq(UserConstants.USER_NORMAL))
+            .and(SYS_USER.DEPT_ID.eq(deptId))
+            .and(SYS_USER.USER_ID.in(userIds)), SysUserVo.class);
     }
 
     /**
@@ -627,8 +627,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
      */
     @Override
     public String selectPhonenumberById(Long userId) {
-        SysUser sysUser = baseMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-            .select(SysUser::getPhonenumber).eq(SysUser::getUserId, userId));
+        SysUser sysUser = baseMapper.selectOneByQuery(QueryWrapper.create().from(SYS_USER).select(SYS_USER.PHONENUMBER).where(SYS_USER.USER_ID.eq(userId)));
         return ObjectUtil.isNull(sysUser) ? null : sysUser.getPhonenumber();
     }
 
@@ -640,8 +639,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
      */
     @Override
     public String selectEmailById(Long userId) {
-        SysUser sysUser = baseMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-            .select(SysUser::getEmail).eq(SysUser::getUserId, userId));
+        SysUser sysUser = baseMapper.selectOneByQuery(QueryWrapper.create().from(SYS_USER).select(SYS_USER.EMAIL).where(SYS_USER.USER_ID.eq(userId)));
         return ObjectUtil.isNull(sysUser) ? null : sysUser.getEmail();
     }
 
@@ -656,8 +654,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
 
     @Override
     public List<Long> selectUserIdsByRoleIds(List<Long> roleIds) {
-        List<SysUserRole> userRoles = userRoleMapper.selectList(
-            new LambdaQueryWrapper<SysUserRole>().in(SysUserRole::getRoleId, roleIds));
+        List<SysUserRole> userRoles = userRoleMapper.selectListByQuery(QueryWrapper.create().in(SysUserRole::getRoleId, roleIds));
         return StreamUtils.toList(userRoles, SysUserRole::getUserId);
     }
 

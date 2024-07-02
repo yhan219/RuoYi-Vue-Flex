@@ -1,13 +1,11 @@
 package org.dromara.workflow.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StreamUtils;
-import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
@@ -42,7 +40,7 @@ public class TestLeaveServiceImpl implements ITestLeaveService {
      */
     @Override
     public TestLeaveVo queryById(Long id) {
-        TestLeaveVo testLeaveVo = baseMapper.selectVoById(id);
+        TestLeaveVo testLeaveVo = baseMapper.selectOneByQueryAs(QueryWrapper.create().eq(TestLeave::getId, id), TestLeaveVo.class);
         WorkflowUtils.setProcessInstanceVo(testLeaveVo, String.valueOf(id));
         return testLeaveVo;
     }
@@ -52,8 +50,8 @@ public class TestLeaveServiceImpl implements ITestLeaveService {
      */
     @Override
     public TableDataInfo<TestLeaveVo> queryPageList(TestLeaveBo bo, PageQuery pageQuery) {
-        LambdaQueryWrapper<TestLeave> lqw = buildQueryWrapper(bo);
-        Page<TestLeaveVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
+        QueryWrapper lqw = buildQueryWrapper(bo);
+        Page<TestLeaveVo> result = baseMapper.paginateAs(pageQuery.build(), lqw, TestLeaveVo.class);
         TableDataInfo<TestLeaveVo> build = TableDataInfo.build(result);
         List<TestLeaveVo> rows = build.getRows();
         if (CollUtil.isNotEmpty(rows)) {
@@ -68,16 +66,16 @@ public class TestLeaveServiceImpl implements ITestLeaveService {
      */
     @Override
     public List<TestLeaveVo> queryList(TestLeaveBo bo) {
-        LambdaQueryWrapper<TestLeave> lqw = buildQueryWrapper(bo);
-        return baseMapper.selectVoList(lqw);
+        QueryWrapper lqw = buildQueryWrapper(bo);
+        return baseMapper.selectListByQueryAs(lqw, TestLeaveVo.class);
     }
 
-    private LambdaQueryWrapper<TestLeave> buildQueryWrapper(TestLeaveBo bo) {
-        LambdaQueryWrapper<TestLeave> lqw = Wrappers.lambdaQuery();
-        lqw.eq(StringUtils.isNotBlank(bo.getLeaveType()), TestLeave::getLeaveType, bo.getLeaveType());
-        lqw.ge(bo.getStartLeaveDays() != null, TestLeave::getLeaveDays, bo.getStartLeaveDays());
-        lqw.le(bo.getEndLeaveDays() != null, TestLeave::getLeaveDays, bo.getEndLeaveDays());
-        lqw.orderByDesc(BaseEntity::getCreateTime);
+    private QueryWrapper buildQueryWrapper(TestLeaveBo bo) {
+        QueryWrapper lqw = QueryWrapper.create();
+        lqw.eq(TestLeave::getLeaveType, bo.getLeaveType());
+        lqw.ge(TestLeave::getLeaveDays, bo.getStartLeaveDays());
+        lqw.le(TestLeave::getLeaveDays, bo.getEndLeaveDays());
+        lqw.orderBy(BaseEntity::getCreateTime, false);
         return lqw;
     }
 
@@ -102,7 +100,7 @@ public class TestLeaveServiceImpl implements ITestLeaveService {
     @Override
     public TestLeaveVo updateByBo(TestLeaveBo bo) {
         TestLeave update = MapstructUtils.convert(bo, TestLeave.class);
-        baseMapper.updateById(update);
+        baseMapper.update(update);
         TestLeaveVo testLeaveVo = MapstructUtils.convert(update, TestLeaveVo.class);
         WorkflowUtils.setProcessInstanceVo(testLeaveVo, String.valueOf(update.getId()));
         return testLeaveVo;
@@ -116,6 +114,6 @@ public class TestLeaveServiceImpl implements ITestLeaveService {
     public Boolean deleteWithValidByIds(Collection<Long> ids) {
         List<String> idList = StreamUtils.toList(ids, String::valueOf);
         actProcessInstanceService.deleteRunAndHisInstanceByBusinessKeys(idList);
-        return baseMapper.deleteBatchIds(ids) > 0;
+        return baseMapper.deleteBatchByIds(ids) > 0;
     }
 }

@@ -21,8 +21,6 @@ import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.redis.utils.RedisUtils;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.common.tenant.helper.TenantHelper;
-import org.dromara.system.domain.SysClient;
-import org.dromara.system.domain.SysUser;
 import org.dromara.system.domain.vo.SysClientVo;
 import org.dromara.system.domain.vo.SysUserVo;
 import org.dromara.system.mapper.SysUserMapper;
@@ -93,11 +91,9 @@ public class SmsAuthStrategy implements IAuthStrategy {
 
     private SysUserVo loadUserByPhonenumber(String tenantId, String phonenumber) {
         return TenantHelper.dynamic(tenantId, () -> {
-            SysUserVo user = userMapper.selectVoOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getPhonenumber, phonenumber));
-            // SysUser user = userMapper.selectOneByQuery(
-            //     QueryWrapper.create().from(SYS_USER)
-            //         .select(SYS_USER.PHONENUMBER, SYS_USER.STATUS)
-            //         .and(SYS_USER.PHONENUMBER.eq(phonenumber)));
+            SysUserVo user = userMapper.selectOneByQueryAs(
+                QueryWrapper.create().from(SYS_USER)
+                    .and(SYS_USER.PHONENUMBER.eq(phonenumber)), SysUserVo.class);
             if (ObjectUtil.isNull(user)) {
                 log.info("登录用户：{} 不存在.", phonenumber);
                 throw new UserException("user.not.exists", phonenumber);

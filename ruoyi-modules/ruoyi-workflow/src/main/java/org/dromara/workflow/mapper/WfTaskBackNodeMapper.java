@@ -9,5 +9,5 @@ import org.dromara.workflow.domain.WfTaskBackNode;
  * @author may
  * @date 2024-03-13
  */
-public interface WfTaskBackNodeMapper extends BaseMapperPlus<WfTaskBackNode, WfTaskBackNode> {
+public interface WfTaskBackNodeMapper extends BaseMapperPlus<WfTaskBackNode> {
 }

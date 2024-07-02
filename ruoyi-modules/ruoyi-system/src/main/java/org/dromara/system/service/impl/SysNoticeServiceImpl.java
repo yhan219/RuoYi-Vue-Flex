@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.dromara.common.core.constant.UserConstants.SYS_USER;
 import static org.dromara.system.domain.table.SysNoticeTableDef.SYS_NOTICE;
 
 /**
@@ -70,11 +71,8 @@ public class SysNoticeServiceImpl implements ISysNoticeService {
             .where(SYS_NOTICE.NOTICE_TITLE.like(bo.getNoticeTitle()))
             .and(SYS_NOTICE.NOTICE_TYPE.eq(bo.getNoticeType()));
         if (StringUtils.isNotBlank(bo.getCreateByName())) {
-            SysUserVo sysUser = userMapper.selectVoOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserName, bo.getCreateByName()));
-            lqw.eq(SysNotice::getCreateBy, ObjectUtil.isNotNull(sysUser) ? sysUser.getUserId() : null);
-
-            //SysUserVo sysUser = userMapper.selectUserByUserName(bo.getCreateByName());
-            // queryWrapper.and(SYS_NOTICE.CREATE_BY.eq(ObjectUtil.isNotNull(sysUser) ? sysUser.getUserId() : null));
+            SysUserVo sysUser = userMapper.selectOneByQueryAs(QueryWrapper.create().from(SYS_USER).eq(SysUser::getUserName, bo.getCreateByName()),SysUserVo.class);
+            queryWrapper.eq(SysNotice::getCreateBy, ObjectUtil.isNotNull(sysUser) ? sysUser.getUserId() : null);
         }
         queryWrapper.orderBy(SYS_NOTICE.NOTICE_ID, true);
         return queryWrapper;

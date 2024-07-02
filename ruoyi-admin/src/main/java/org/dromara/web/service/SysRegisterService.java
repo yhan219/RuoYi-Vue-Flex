@@ -1,7 +1,6 @@
 package org.dromara.web.service;
 
 import cn.dev33.satoken.secure.BCrypt;
-import cn.hutool.core.util.ObjectUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.Constants;
@@ -19,7 +18,6 @@ import org.dromara.common.log.event.LogininforEvent;
 import org.dromara.common.redis.utils.RedisUtils;
 import org.dromara.common.tenant.helper.TenantHelper;
 import org.dromara.common.web.config.properties.CaptchaProperties;
-import org.dromara.system.domain.SysUser;
 import org.dromara.system.domain.bo.SysUserBo;
 import org.dromara.system.mapper.SysUserMapper;
 import org.dromara.system.service.ISysUserService;
@@ -61,15 +59,11 @@ public class SysRegisterService {
         sysUser.setPassword(BCrypt.hashpw(password));
         sysUser.setUserType(userType);
 
-        boolean exist = TenantHelper.dynamic(tenantId, () -> {
-            return userMapper.exists(new LambdaQueryWrapper<SysUser>()
-                .eq(SysUser::getUserName, sysUser.getUserName()));
-        });
 
-        //  boolean exist = TenantHelper.dynamic(tenantId, () -> userMapper.selectCountByQuery(QueryWrapper.create()
-        //              .from(SYS_USER)
-        //              .and(SYS_USER.USER_NAME.eq(sysUser.getUserName()))
-        //              .and(SYS_USER.USER_ID.ne(sysUser.getUserId()))) != 0);
+         boolean exist = TenantHelper.dynamic(tenantId, () -> userMapper.selectCountByQuery(QueryWrapper.create()
+                     .from(SYS_USER)
+                     .and(SYS_USER.USER_NAME.eq(sysUser.getUserName()))
+                     .and(SYS_USER.USER_ID.ne(sysUser.getUserId()))) != 0);
         if (exist) {
             throw new UserException("user.register.save.error", username);
         }

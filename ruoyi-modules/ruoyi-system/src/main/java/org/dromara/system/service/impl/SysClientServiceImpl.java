@@ -54,9 +54,7 @@ public class SysClientServiceImpl implements ISysClientService {
     @Cacheable(cacheNames = CacheNames.SYS_CLIENT, key = "#clientId")
     @Override
     public SysClientVo queryByClientId(String clientId) {
-        return baseMapper.selectVoOne(new LambdaQueryWrapper<SysClient>().eq(SysClient::getClientId, clientId));
-    // public SysClient queryByClientId(String clientId) {
-    //     return baseMapper.selectOneByQuery(QueryWrapper.create().from(SYS_CLIENT).where(SYS_CLIENT.CLIENT_ID.eq(clientId)));
+        return baseMapper.selectOneByQueryAs(QueryWrapper.create().from(SYS_CLIENT).where(SYS_CLIENT.CLIENT_ID.eq(clientId)), SysClientVo.class);
     }
 
     /**
@@ -126,16 +124,11 @@ public class SysClientServiceImpl implements ISysClientService {
     @CacheEvict(cacheNames = CacheNames.SYS_CLIENT, key = "#clientId")
     @Override
     public int updateUserStatus(String clientId, String status) {
-        return baseMapper.update(null,
-            new LambdaUpdateWrapper<SysClient>()
+        return UpdateChain.of(SysClient.class)
             .set(SysClient::getStatus, status)
-                .eq(SysClient::getClientId, clientId));
-
-        //  return UpdateChain.of(SysClient.class)
-        //             .set(SysClient::getStatus, status)
-        //             .from(SysClient.class)
-        //             .where(SysClient::getId).eq(id)
-        //             .update();
+            .from(SysClient.class)
+            .where(SysClient::getClientId).eq(clientId)
+            .update() ? 1 : 0;
     }
 
     /**

@@ -1,7 +1,7 @@
 package org.dromara.workflow.service.impl;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.tenant.helper.TenantHelper;
 import org.dromara.workflow.domain.ActHiProcinst;
@@ -31,9 +31,9 @@ public class ActHiProcinstServiceImpl implements IActHiProcinstService {
      */
     @Override
     public List<ActHiProcinst> selectByBusinessKeyIn(List<String> businessKeys) {
-        return baseMapper.selectList(new LambdaQueryWrapper<ActHiProcinst>()
+        return baseMapper.selectListByQuery(QueryWrapper.create()
             .in(ActHiProcinst::getBusinessKey, businessKeys)
-            .eq(TenantHelper.isEnable(), ActHiProcinst::getTenantId, TenantHelper.getTenantId()));
+            .eq(ActHiProcinst::getTenantId, TenantHelper.getTenantId(),TenantHelper.isEnable()));
     }
 
     /**
@@ -43,9 +43,9 @@ public class ActHiProcinstServiceImpl implements IActHiProcinstService {
      */
     @Override
     public ActHiProcinst selectByBusinessKey(String businessKey) {
-        return baseMapper.selectOne(new LambdaQueryWrapper<ActHiProcinst>()
+        return baseMapper.selectOneByQuery((QueryWrapper.create()
             .eq(ActHiProcinst::getBusinessKey, businessKey)
-            .eq(TenantHelper.isEnable(), ActHiProcinst::getTenantId, TenantHelper.getTenantId()));
+            .eq(ActHiProcinst::getTenantId, TenantHelper.getTenantId(), TenantHelper.isEnable())));
 
     }
 }

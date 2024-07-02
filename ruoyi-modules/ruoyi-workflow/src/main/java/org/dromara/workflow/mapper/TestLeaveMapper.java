@@ -10,6 +10,6 @@ import org.dromara.workflow.domain.vo.TestLeaveVo;
  * @author may
  * @date 2023-07-21
  */
-public interface TestLeaveMapper extends BaseMapperPlus<TestLeave, TestLeaveVo> {
+public interface TestLeaveMapper extends BaseMapperPlus<TestLeave> {
 
 }

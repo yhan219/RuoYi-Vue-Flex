@@ -1,7 +1,7 @@
 package org.dromara.workflow.domain;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dromara.common.tenant.core.TenantEntity;
@@ -16,7 +16,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("wf_task_back_node")
+@Table("wf_task_back_node")
 public class WfTaskBackNode extends TenantEntity {
 
     @Serial
@@ -25,7 +25,7 @@ public class WfTaskBackNode extends TenantEntity {
     /**
      * 主键
      */
-    @TableId(value = "id")
+    @Id
     private Long id;
 
     /**

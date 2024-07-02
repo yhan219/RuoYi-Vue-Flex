@@ -3,7 +3,6 @@ package org.dromara.system.service.impl;
 import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.MapstructUtils;
-import org.dromara.common.core.utils.StringUtils;
 import org.dromara.system.domain.SysSocial;
 import org.dromara.system.domain.bo.SysSocialBo;
 import org.dromara.system.domain.vo.SysSocialVo;
@@ -41,11 +40,12 @@ public class SysSocialServiceImpl implements ISysSocialService {
      */
     @Override
     public List<SysSocialVo> queryList(SysSocialBo bo) {
-        LambdaQueryWrapper<SysSocial> lqw = new LambdaQueryWrapper<SysSocial>()
-            .eq(ObjectUtil.isNotNull(bo.getUserId()), SysSocial::getUserId, bo.getUserId())
-            .eq(StringUtils.isNotBlank(bo.getAuthId()), SysSocial::getAuthId, bo.getAuthId())
-            .eq(StringUtils.isNotBlank(bo.getSource()), SysSocial::getSource, bo.getSource());
-        return baseMapper.selectVoList(lqw);
+        QueryWrapper wrapper = QueryWrapper.create()
+            .from(SYS_SOCIAL)
+            .where(SYS_SOCIAL.USER_ID.eq(bo.getUserId()))
+            .and(SYS_SOCIAL.AUTH_ID.eq(bo.getAuthId()))
+            .and(SYS_SOCIAL.SOURCE.eq(bo.getSource()));
+        return baseMapper.selectListByQueryAs(wrapper, SysSocialVo.class);
     }
 
     @Override

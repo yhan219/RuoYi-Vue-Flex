@@ -32,15 +32,15 @@ public interface SysDeptMapper extends BaseMapperPlus<SysDept> {
         ));
     }
 
-    default SysDeptVo selectDeptById(Long deptId){
+    default SysDeptVo selectDeptById(Long deptId) {
         QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_DEPT.DEPT_ID.eq(deptId));
         return selectOneByQueryAs(queryWrapper, SysDeptVo.class, DataColumn.of("deptName", "dept_id"));
     }
 
-    @DataPermission({
-        @DataColumn(key = "deptName", value = "dept_id")
-    })
-    long countDeptById(Long deptId);
+    default long countDeptById(Long deptId) {
+        QueryWrapper queryWrapper = QueryWrapper.create().where(SYS_DEPT.DEPT_ID.eq(deptId));
+        return selectCountByQuery(queryWrapper, DataColumn.of("deptName", "dept_id"));
+    }
 
     /**
      * 根据角色ID查询部门树信息

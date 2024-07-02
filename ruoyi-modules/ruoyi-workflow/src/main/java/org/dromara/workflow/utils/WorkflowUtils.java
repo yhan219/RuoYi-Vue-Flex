@@ -4,7 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.dromara.common.core.domain.dto.UserDTO;
@@ -118,9 +118,7 @@ public class WorkflowUtils {
             actHiTaskinst.setProcInstId(processInstanceId);
             actHiTaskinst.setScopeType(TaskStatusEnum.COPY.getStatus());
             actHiTaskinst.setTenantId(tenantId);
-            LambdaUpdateWrapper<ActHiTaskinst> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.in(ActHiTaskinst::getId, taskIds);
-            ACT_HI_TASKINST_MAPPER.update(actHiTaskinst, updateWrapper);
+            ACT_HI_TASKINST_MAPPER.updateByQuery(actHiTaskinst, QueryWrapper.create().in(ActHiTaskinst::getId, taskIds));
             for (Task task : list) {
                 PROCESS_ENGINE.getTaskService().addComment(task.getId(), task.getProcessInstanceId(), TaskStatusEnum.COPY.getStatus(), StrUtil.EMPTY);
             }

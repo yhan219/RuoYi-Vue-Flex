@@ -77,28 +77,18 @@ public class SysDeptServiceImpl implements ISysDeptService, DeptService {
     }
 
     private QueryWrapper buildQueryWrapper(SysDeptBo bo) {
-        LambdaQueryWrapper<SysDept> lqw = Wrappers.lambdaQuery();
-        lqw.eq(SysDept::getDelFlag, "0");
-        lqw.eq(ObjectUtil.isNotNull(bo.getDeptId()), SysDept::getDeptId, bo.getDeptId());
-        lqw.eq(ObjectUtil.isNotNull(bo.getParentId()), SysDept::getParentId, bo.getParentId());
-        lqw.like(StringUtils.isNotBlank(bo.getDeptName()), SysDept::getDeptName, bo.getDeptName());
-        lqw.like(StringUtils.isNotBlank(bo.getDeptCategory()), SysDept::getDeptCategory, bo.getDeptCategory());
-        lqw.eq(StringUtils.isNotBlank(bo.getStatus()), SysDept::getStatus, bo.getStatus());
-        lqw.orderByAsc(SysDept::getAncestors);
-        lqw.orderByAsc(SysDept::getParentId);
-        lqw.orderByAsc(SysDept::getOrderNum);
-        lqw.orderByAsc(SysDept::getDeptId);
-        return lqw;
         return QueryWrapper.create()
             .select()
             .from(SYS_DEPT)
             .where(SYS_DEPT.DEPT_ID.eq(bo.getDeptId()))
             .and(SYS_DEPT.PARENT_ID.eq(bo.getParentId()))
             .and(SYS_DEPT.DEPT_NAME.like(bo.getDeptName()))
+            .and(SYS_DEPT.DEPT_CATEGORY.like(bo.getDeptCategory()))
             .and(SYS_DEPT.STATUS.eq(bo.getStatus()))
-            .orderBy(SYS_DEPT.DEPT_ID, true)
+            .orderBy(SYS_DEPT.ANCESTORS, true)
             .orderBy(SYS_DEPT.PARENT_ID, true)
-            .orderBy(SYS_DEPT.ORDER_NUM, true);
+            .orderBy(SYS_DEPT.ORDER_NUM, true)
+            .orderBy(SYS_DEPT.DEPT_ID, true);
     }
 
     /**
@@ -155,10 +145,10 @@ public class SysDeptServiceImpl implements ISysDeptService, DeptService {
 
     @Override
     public List<SysDeptVo> selectDeptByIds(List<Long> deptIds) {
-        return baseMapper.selectDeptList(new LambdaQueryWrapper<SysDept>()
+        return baseMapper.selectDeptList(QueryWrapper.create().from(SYS_DEPT)
             .select(SysDept::getDeptId, SysDept::getDeptName, SysDept::getLeader)
             .eq(SysDept::getStatus, UserConstants.DEPT_NORMAL)
-            .in(CollUtil.isNotEmpty(deptIds), SysDept::getDeptId, deptIds));
+            .in(SysDept::getDeptId, deptIds));
     }
 
     /**
@@ -238,9 +228,9 @@ public class SysDeptServiceImpl implements ISysDeptService, DeptService {
      */
     @Override
     public boolean checkDeptCategoryUnique(SysDeptBo dept) {
-        boolean exist = baseMapper.exists(new LambdaQueryWrapper<SysDept>()
+        boolean exist = baseMapper.selectCountByQuery(QueryWrapper.create().from(SYS_DEPT)
             .eq(SysDept::getDeptCategory, dept.getDeptCategory())
-            .ne(ObjectUtil.isNotNull(dept.getDeptId()), SysDept::getDeptId, dept.getDeptId()));
+            .ne(SysDept::getDeptId, dept.getDeptId())) > 0;
         return !exist;
     }
 

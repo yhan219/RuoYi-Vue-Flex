@@ -2,7 +2,7 @@ package org.dromara.workflow.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.StringUtils;
@@ -60,7 +60,7 @@ public class WfTaskBackNodeServiceImpl implements IWfTaskBackNodeService {
                 WfTaskBackNode node = getListByInstanceIdAndNodeId(wfTaskBackNode.getInstanceId(), wfTaskBackNode.getNodeId());
                 if (ObjectUtil.isNotEmpty(node)) {
                     node.setAssignee(node.getAssignee() + StringUtils.SEPARATOR + LoginHelper.getUserId());
-                    wfTaskBackNodeMapper.updateById(node);
+                    wfTaskBackNodeMapper.update(node);
                 } else {
                     wfTaskBackNodeMapper.insert(wfTaskBackNode);
                 }
@@ -70,28 +70,28 @@ public class WfTaskBackNodeServiceImpl implements IWfTaskBackNodeService {
 
     @Override
     public List<WfTaskBackNode> getListByInstanceId(String processInstanceId) {
-        LambdaQueryWrapper<WfTaskBackNode> wrapper = new LambdaQueryWrapper<>();
+        QueryWrapper wrapper = QueryWrapper.create();
         wrapper.eq(WfTaskBackNode::getInstanceId, processInstanceId);
-        wrapper.orderByDesc(WfTaskBackNode::getOrderNo);
-        return wfTaskBackNodeMapper.selectList(wrapper);
+        wrapper.orderBy(WfTaskBackNode::getOrderNo,false);
+        return wfTaskBackNodeMapper.selectListByQuery(wrapper);
     }
 
     @Override
     public WfTaskBackNode getListByInstanceIdAndNodeId(String processInstanceId, String nodeId) {
-        LambdaQueryWrapper<WfTaskBackNode> queryWrapper = new LambdaQueryWrapper<>();
+        QueryWrapper queryWrapper = QueryWrapper.create();
         queryWrapper.eq(WfTaskBackNode::getInstanceId, processInstanceId);
         queryWrapper.eq(WfTaskBackNode::getNodeId, nodeId);
-        return wfTaskBackNodeMapper.selectOne(queryWrapper);
+        return wfTaskBackNodeMapper.selectOneByQuery(queryWrapper);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteBackTaskNode(String processInstanceId, String targetActivityId) {
         try {
-            LambdaQueryWrapper<WfTaskBackNode> queryWrapper = new LambdaQueryWrapper<>();
+            QueryWrapper queryWrapper = QueryWrapper.create();
             queryWrapper.eq(WfTaskBackNode::getInstanceId, processInstanceId);
             queryWrapper.eq(WfTaskBackNode::getNodeId, targetActivityId);
-            WfTaskBackNode actTaskNode = wfTaskBackNodeMapper.selectOne(queryWrapper);
+            WfTaskBackNode actTaskNode = wfTaskBackNodeMapper.selectOneByQuery(queryWrapper);
             if (ObjectUtil.isNotNull(actTaskNode)) {
                 Integer orderNo = actTaskNode.getOrderNo();
                 List<WfTaskBackNode> taskNodeList = getListByInstanceId(processInstanceId);
@@ -104,7 +104,7 @@ public class WfTaskBackNodeServiceImpl implements IWfTaskBackNodeService {
                     }
                 }
                 if (CollUtil.isNotEmpty(ids)) {
-                    wfTaskBackNodeMapper.deleteBatchIds(ids);
+                    wfTaskBackNodeMapper.deleteBatchByIds(ids);
                 }
             }
             return true;
@@ -117,10 +117,10 @@ public class WfTaskBackNodeServiceImpl implements IWfTaskBackNodeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteByInstanceId(String processInstanceId) {
-        LambdaQueryWrapper<WfTaskBackNode> wrapper = new LambdaQueryWrapper<>();
+        QueryWrapper wrapper = QueryWrapper.create();
         wrapper.eq(WfTaskBackNode::getInstanceId, processInstanceId);
-        List<WfTaskBackNode> list = wfTaskBackNodeMapper.selectList(wrapper);
-        int delete = wfTaskBackNodeMapper.delete(wrapper);
+        List<WfTaskBackNode> list = wfTaskBackNodeMapper.selectListByQuery(wrapper);
+        int delete = wfTaskBackNodeMapper.deleteByQuery(wrapper);
         if (list.size() != delete) {
             throw new ServiceException("删除失败");
         }
@@ -129,10 +129,10 @@ public class WfTaskBackNodeServiceImpl implements IWfTaskBackNodeService {
 
     @Override
     public boolean deleteByInstanceIds(List<String> processInstanceIds) {
-        LambdaQueryWrapper<WfTaskBackNode> wrapper = new LambdaQueryWrapper<>();
+        QueryWrapper wrapper = QueryWrapper.create();
         wrapper.in(WfTaskBackNode::getInstanceId, processInstanceIds);
-        List<WfTaskBackNode> list = wfTaskBackNodeMapper.selectList(wrapper);
-        int delete = wfTaskBackNodeMapper.delete(wrapper);
+        List<WfTaskBackNode> list = wfTaskBackNodeMapper.selectListByQuery(wrapper);
+        int delete = wfTaskBackNodeMapper.deleteByQuery(wrapper);
         if (list.size() != delete) {
             throw new ServiceException("删除失败");
         }

@@ -176,9 +176,9 @@ public class SysRoleServiceImpl implements ISysRoleService {
      */
     @Override
     public List<SysRoleVo> selectRoleByIds(List<Long> roleIds) {
-        return baseMapper.selectRoleList(new QueryWrapper<SysRole>()
+        return baseMapper.selectRoleList(QueryWrapper.create()
             .eq("r.status", UserConstants.ROLE_NORMAL)
-            .in(CollUtil.isNotEmpty(roleIds), "r.role_id", roleIds));
+            .in("r.role_id", roleIds, CollUtil.isNotEmpty(roleIds)));
     }
 
     /**

@@ -8,6 +8,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.CacheNames;
+import org.dromara.common.core.domain.dto.OssDTO;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.service.OssService;
 import org.dromara.common.core.utils.MapstructUtils;
@@ -34,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

@@ -25,7 +25,9 @@
         <easyexcel.version>3.3.4</easyexcel.version>
         <velocity.version>2.3</velocity.version>
         <satoken.version>1.37.0</satoken.version>
-        <mybatis-flex.version>1.8.8</mybatis-flex.version>
+        <mybatis-flex.version>1.9.2</mybatis-flex.version>
+        <mybatis.version>3.5.15</mybatis.version>
+        <spring-boot.mybatis>3.0.3</spring-boot.mybatis>
         <hutool.version>5.8.22</hutool.version>
         <okhttp.version>4.10.0</okhttp.version>
         <spring-boot-admin.version>3.2.3</spring-boot-admin.version>
@@ -209,12 +211,34 @@
             </dependency>
 
 
+            <!-- Mybatis 依赖配置 -->
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${spring-boot.mybatis}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.mybatis</groupId>
+                        <artifactId>mybatis</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
             <dependency>
                 <groupId>com.mybatis-flex</groupId>
                 <artifactId>mybatis-flex-spring-boot3-starter</artifactId>
                 <version>${mybatis-flex.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.mybatis</groupId>
+                        <artifactId>mybatis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
-
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis</artifactId>
+                <version>${mybatis.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.mybatis-flex</groupId>

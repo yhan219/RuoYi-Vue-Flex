@@ -7,7 +7,6 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
-import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.zhyd.oauth.model.AuthResponse;
@@ -35,8 +34,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
-import static org.dromara.system.domain.table.SysUserTableDef.SYS_USER;
 
 /**
  * 第三方授权策略
@@ -120,11 +117,7 @@ public class SocialAuthStrategy implements IAuthStrategy {
 
     private SysUserVo loadUser(String tenantId, Long userId) {
        return TenantHelper.dynamic(tenantId, () -> {
-            SysUserVo user = userMapper.selectVoById(userId);
-            // SysUser user = userMapper.selectOneByQuery(
-            //     QueryWrapper.create().from(SYS_USER)
-            //         .select(SYS_USER.USER_NAME, SYS_USER.STATUS)
-            //         .and(SYS_USER.USER_ID.eq(userId)));
+            SysUserVo user = userMapper.selectOneWithRelationsByIdAs(userId,SysUserVo.class);
             if (ObjectUtil.isNull(user)) {
                 log.info("登录用户：{} 不存在.", "");
                 throw new UserException("user.not.exists", "");

@@ -2,16 +2,17 @@ package org.dromara.workflow.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.core.row.Db;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.StreamUtils;
-import org.dromara.workflow.domain.vo.WfFormManageVo;
-import org.dromara.workflow.service.IWfFormManageService;
-import org.springframework.stereotype.Service;
-import org.dromara.workflow.domain.vo.WfNodeConfigVo;
 import org.dromara.workflow.domain.WfNodeConfig;
+import org.dromara.workflow.domain.vo.WfFormManageVo;
+import org.dromara.workflow.domain.vo.WfNodeConfigVo;
 import org.dromara.workflow.mapper.WfNodeConfigMapper;
+import org.dromara.workflow.service.IWfFormManageService;
 import org.dromara.workflow.service.IWfNodeConfigService;
+import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
@@ -34,7 +35,7 @@ public class WfNodeConfigServiceImpl implements IWfNodeConfigService {
      */
     @Override
     public WfNodeConfigVo queryById(Long id) {
-        return baseMapper.selectVoById(id);
+        return baseMapper.selectOneByQueryAs(QueryWrapper.create().eq(WfNodeConfig::getId, id), WfNodeConfigVo.class);
     }
 
     /**
@@ -42,7 +43,11 @@ public class WfNodeConfigServiceImpl implements IWfNodeConfigService {
      */
     @Override
     public Boolean saveOrUpdate(List<WfNodeConfig> list) {
-        return baseMapper.insertOrUpdateBatch(list);
+        int[] result = Db.executeBatch(list.size(), 1000, WfNodeConfigMapper.class, (mapper, index) -> {
+            WfNodeConfig it = list.get(index);
+            mapper.insertOrUpdate(it);
+        });
+        return result.length > 0;
     }
 
     /**
@@ -50,19 +55,19 @@ public class WfNodeConfigServiceImpl implements IWfNodeConfigService {
      */
     @Override
     public Boolean deleteByIds(Collection<Long> ids) {
-        return baseMapper.deleteBatchIds(ids) > 0;
+        return baseMapper.deleteBatchByIds(ids) > 0;
     }
 
 
 
     @Override
     public Boolean deleteByDefIds(Collection<String> ids) {
-        return baseMapper.delete(new LambdaQueryWrapper<WfNodeConfig>().in(WfNodeConfig::getDefinitionId, ids)) > 0;
+        return baseMapper.deleteByQuery(QueryWrapper.create().in(WfNodeConfig::getDefinitionId, ids)) > 0;
     }
 
     @Override
     public List<WfNodeConfigVo> selectByDefIds(Collection<String> ids) {
-        List<WfNodeConfigVo> wfNodeConfigVos = baseMapper.selectVoList(new LambdaQueryWrapper<WfNodeConfig>().in(WfNodeConfig::getDefinitionId, ids));
+        List<WfNodeConfigVo> wfNodeConfigVos = baseMapper.selectListByQueryAs(QueryWrapper.create().in(WfNodeConfig::getDefinitionId, ids), WfNodeConfigVo.class);
         if (CollUtil.isNotEmpty(wfNodeConfigVos)) {
             List<Long> formIds = StreamUtils.toList(wfNodeConfigVos, WfNodeConfigVo::getFormId);
             List<WfFormManageVo> wfFormManageVos = wfFormManageService.queryByIds(formIds);

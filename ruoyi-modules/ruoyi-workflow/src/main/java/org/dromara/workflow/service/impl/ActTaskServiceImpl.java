@@ -4,8 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryColumn;
+import com.mybatisflex.core.query.QueryTable;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.domain.dto.RoleDTO;
 import org.dromara.common.core.domain.dto.UserDTO;
@@ -60,6 +62,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.dromara.workflow.common.constant.FlowConstant.*;
+import static org.dromara.workflow.domain.table.ActHiProcinstTableDef.ACT_HI_PROCINST;
 
 /**
  * 任务 服务层实现
@@ -175,7 +178,7 @@ public class ActTaskServiceImpl implements IActTaskService {
                 throw new ServiceException(FlowConstant.MESSAGE_SUSPENDED);
             }
             ProcessInstance processInstance = QueryUtils.instanceQuery(task.getProcessInstanceId()).singleResult();
-            //办理委托任务
+            // 办理委托任务
             if (ObjectUtil.isNotEmpty(task.getDelegationState()) && FlowConstant.PENDING.equals(task.getDelegationState().name())) {
                 taskService.resolveTask(completeTaskBo.getTaskId());
                 TaskEntity newTask = WorkflowUtils.createNewTask(task);
@@ -183,7 +186,7 @@ public class ActTaskServiceImpl implements IActTaskService {
                 taskService.complete(newTask.getId());
                 return true;
             }
-            //附件上传
+            // 附件上传
             AttachmentCmd attachmentCmd = new AttachmentCmd(completeTaskBo.getFileId(), task.getId(), task.getProcessInstanceId());
             managementService.executeCommand(attachmentCmd);
             FlowProcessEventHandler processHandler = flowEventStrategy.getProcessHandler(processInstance.getProcessDefinitionKey());
@@ -199,16 +202,16 @@ public class ActTaskServiceImpl implements IActTaskService {
             if (taskHandler != null) {
                 taskHandler.handleTask(task.getId(), processInstance.getBusinessKey());
             }
-            //办理意见
+            // 办理意见
             taskService.addComment(completeTaskBo.getTaskId(), task.getProcessInstanceId(), TaskStatusEnum.PASS.getStatus(), StringUtils.isBlank(completeTaskBo.getMessage()) ? "同意" : completeTaskBo.getMessage());
-            //办理任务
+            // 办理任务
             taskService.setAssignee(task.getId(), userId);
             if (CollUtil.isNotEmpty(completeTaskBo.getVariables())) {
                 taskService.complete(completeTaskBo.getTaskId(), completeTaskBo.getVariables());
             } else {
                 taskService.complete(completeTaskBo.getTaskId());
             }
-            //记录执行过的流程任务节点
+            // 记录执行过的流程任务节点
             wfTaskBackNodeService.recordExecuteNode(task);
             ProcessInstance pi = QueryUtils.instanceQuery(task.getProcessInstanceId()).singleResult();
             if (pi == null) {
@@ -263,23 +266,33 @@ public class ActTaskServiceImpl implements IActTaskService {
      */
     @Override
     public TableDataInfo<TaskVo> getPageByTaskWait(TaskBo taskBo, PageQuery pageQuery) {
-        QueryWrapper<TaskVo> queryWrapper = new QueryWrapper<>();
         List<RoleDTO> roles = LoginHelper.getLoginUser().getRoles();
         List<String> roleIds = StreamUtils.toList(roles, e -> String.valueOf(e.getRoleId()));
         String userId = String.valueOf(LoginHelper.getUserId());
-        queryWrapper.eq("t.business_status_", BusinessStatusEnum.WAITING.getStatus());
-        queryWrapper.eq(TenantHelper.isEnable(), "t.tenant_id_", TenantHelper.getTenantId());
-        queryWrapper.and(w1 -> w1.eq("t.assignee_", userId).or(w2 -> w2.isNull("t.assignee_").apply("exists ( select LINK.ID_ from ACT_RU_IDENTITYLINK LINK where LINK.TASK_ID_ = t.ID_ and LINK.TYPE_ = 'candidate' " + "and (LINK.USER_ID_ = {0} or ( LINK.GROUP_ID_ IN " + getInParam(roleIds) + " ) ))", userId)));
-        if (StringUtils.isNotBlank(taskBo.getName())) {
-            queryWrapper.like("t.name_", taskBo.getName());
-        }
-        if (StringUtils.isNotBlank(taskBo.getProcessDefinitionName())) {
-            queryWrapper.like("t.processDefinitionName", taskBo.getProcessDefinitionName());
-        }
-        if (StringUtils.isNotBlank(taskBo.getProcessDefinitionKey())) {
-            queryWrapper.eq("t.processDefinitionKey", taskBo.getProcessDefinitionKey());
-        }
-        Page<TaskVo> page = actTaskMapper.getTaskWaitByPage(pageQuery.build(), queryWrapper);
+
+        QueryWrapper queryWrapper = QueryWrapper.create().select("RES.*")
+            .select(ACT_HI_PROCINST.BUSINESS_STATUS, ACT_HI_PROCINST.BUSINESS_KEY)
+            .select(new QueryColumn("ARP", "NAME_").as("processDefinitionName"))
+            .select(new QueryColumn("ARP", "KEY_").as("processDefinitionKey"))
+            .select(new QueryColumn("ARP", "VERSION_").as("processDefinitionVersion"))
+            .from(new QueryTable("ACT_RU_TASK").as("RES"))
+            .innerJoin(ACT_HI_PROCINST.as("AHP")).on(new QueryColumn("RES", "PROC_INST_ID_").eq(ACT_HI_PROCINST.PROC_INST_ID))
+            .innerJoin(new QueryTable("ACT_RE_PROCDEF").as("ARP")).on(new QueryColumn("ARP", "ID_").eq(new QueryColumn("RES", "PROC_DEF_ID_")))
+            .where(new QueryColumn("RES", "PARENT_TASK_ID_").isNull()
+                .and(new QueryColumn("AHP", "BUSINESS_STATUS_").eq(BusinessStatusEnum.WAITING.getStatus()))
+                .and(new QueryColumn("RES", "TENANT_ID_").eq(TenantHelper.getTenantId(), TenantHelper.isEnable()))
+                .and(new QueryColumn("RES", "ASSIGNEE_").eq(userId)
+                    .or(new QueryColumn("RES", "ASSIGNEE_").isNull()
+                        .and("exists ( select LINK.ID_ from ACT_RU_IDENTITYLINK LINK where LINK.TASK_ID_ = RES.ID_ and LINK.TYPE_ = 'candidate' " + "and (LINK.USER_ID_ = " + userId + " or ( LINK.GROUP_ID_ IN " + getInParam(roleIds) + " ) ))")
+                    )
+                )
+                .and(new QueryColumn("RES", "NAME_").like(taskBo.getName()))
+                .and(new QueryColumn("ARP", "NAME_").like(taskBo.getProcessDefinitionName()))
+                .and(new QueryColumn("ARP", "KEY_").eq(taskBo.getProcessDefinitionKey()))
+            )
+            .orderBy(new QueryColumn("RES", "CREATE_TIME_").desc());
+
+        Page<TaskVo> page = actTaskMapper.paginateAs(pageQuery, queryWrapper, TaskVo.class);
 
         List<TaskVo> taskList = page.getRecords();
         if (CollUtil.isNotEmpty(taskList)) {
@@ -376,12 +389,8 @@ public class ActTaskServiceImpl implements IActTaskService {
     @Override
     public TableDataInfo<TaskVo> getPageByTaskFinish(TaskBo taskBo, PageQuery pageQuery) {
         String userId = String.valueOf(LoginHelper.getUserId());
-        QueryWrapper<TaskVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like(StringUtils.isNotBlank(taskBo.getName()), "t.name_", taskBo.getName());
-        queryWrapper.like(StringUtils.isNotBlank(taskBo.getProcessDefinitionName()), "t.processDefinitionName", taskBo.getProcessDefinitionName());
-        queryWrapper.eq(StringUtils.isNotBlank(taskBo.getProcessDefinitionKey()), "t.processDefinitionKey", taskBo.getProcessDefinitionKey());
-        queryWrapper.eq("t.assignee_", userId);
-        Page<TaskVo> page = actTaskMapper.getTaskFinishByPage(pageQuery.build(), queryWrapper);
+
+        Page<TaskVo> page = actTaskMapper.getTaskFinishByPage(pageQuery, userId, taskBo);
 
         List<TaskVo> taskList = page.getRecords();
         if (CollUtil.isNotEmpty(taskList)) {
@@ -405,19 +414,24 @@ public class ActTaskServiceImpl implements IActTaskService {
      */
     @Override
     public TableDataInfo<TaskVo> getPageByTaskCopy(TaskBo taskBo, PageQuery pageQuery) {
-        QueryWrapper<TaskVo> queryWrapper = new QueryWrapper<>();
         String userId = String.valueOf(LoginHelper.getUserId());
-        if (StringUtils.isNotBlank(taskBo.getName())) {
-            queryWrapper.like("t.name_", taskBo.getName());
-        }
-        if (StringUtils.isNotBlank(taskBo.getProcessDefinitionName())) {
-            queryWrapper.like("t.processDefinitionName", taskBo.getProcessDefinitionName());
-        }
-        if (StringUtils.isNotBlank(taskBo.getProcessDefinitionKey())) {
-            queryWrapper.eq("t.processDefinitionKey", taskBo.getProcessDefinitionKey());
-        }
-        queryWrapper.eq("t.assignee_", userId);
-        Page<TaskVo> page = actTaskMapper.getTaskCopyByPage(pageQuery.build(), queryWrapper);
+        QueryWrapper queryWrapper = QueryWrapper.create().select("AHT.*")
+            .select(ACT_HI_PROCINST.BUSINESS_STATUS, ACT_HI_PROCINST.BUSINESS_KEY)
+            .select(new QueryColumn("ARP", "NAME_").as("processDefinitionName"))
+            .select(new QueryColumn("ARP", "KEY_").as("processDefinitionKey"))
+            .select(new QueryColumn("ARP", "VERSION_").as("processDefinitionVersion"))
+            .from(new QueryTable("ACT_HI_TASKINST").as("AHT"))
+            .innerJoin(ACT_HI_PROCINST.as("AHP")).on(new QueryColumn("AHT", "PROC_INST_ID_").eq(ACT_HI_PROCINST.PROC_INST_ID))
+            .innerJoin(new QueryTable("ACT_RE_PROCDEF").as("ARP")).on(new QueryColumn("ARP", "ID_").eq(new QueryColumn("AHT", "PROC_DEF_ID_")))
+            .where(new QueryColumn("AHT", "PARENT_TASK_ID_").isNotNull())
+            .and(new QueryColumn("AHT", "scope_type_").eq("copy"))
+            .and(new QueryColumn("AHT", "NAME").like(taskBo.getName()))
+            .and(new QueryColumn("ARP", "NAME_").like(taskBo.getProcessDefinitionName()))
+            .and(new QueryColumn("ARP", "KEY_").eq(taskBo.getProcessDefinitionKey()))
+            .and(new QueryColumn("AHT", "ASSIGNEE_").eq(userId))
+            .orderBy(new QueryColumn("AHT", "START_TIME_").desc());
+
+        Page<TaskVo> page = actTaskMapper.paginateAs(pageQuery, queryWrapper, TaskVo.class);
 
         List<TaskVo> taskList = page.getRecords();
         if (CollUtil.isNotEmpty(taskList)) {
@@ -441,11 +455,8 @@ public class ActTaskServiceImpl implements IActTaskService {
      */
     @Override
     public TableDataInfo<TaskVo> getPageByAllTaskFinish(TaskBo taskBo, PageQuery pageQuery) {
-        QueryWrapper<TaskVo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like(StringUtils.isNotBlank(taskBo.getName()), "t.name_", taskBo.getName());
-        queryWrapper.like(StringUtils.isNotBlank(taskBo.getProcessDefinitionName()), "t.processDefinitionName", taskBo.getProcessDefinitionName());
-        queryWrapper.eq(StringUtils.isNotBlank(taskBo.getProcessDefinitionKey()), "t.processDefinitionKey", taskBo.getProcessDefinitionKey());
-        Page<TaskVo> page = actTaskMapper.getTaskFinishByPage(pageQuery.build(), queryWrapper);
+
+        Page<TaskVo> page = actTaskMapper.getTaskFinishByPage(pageQuery, null, taskBo);
 
         List<TaskVo> taskList = page.getRecords();
         if (CollUtil.isNotEmpty(taskList)) {
@@ -481,9 +492,9 @@ public class ActTaskServiceImpl implements IActTaskService {
         try {
             TaskEntity newTask = WorkflowUtils.createNewTask(task);
             taskService.addComment(newTask.getId(), task.getProcessInstanceId(), TaskStatusEnum.PENDING.getStatus(), "【" + LoginHelper.getLoginUser().getNickname() + "】委派给【" + delegateBo.getNickName() + "】");
-            //委托任务
+            // 委托任务
             taskService.delegateTask(delegateBo.getTaskId(), delegateBo.getUserId());
-            //办理生成的任务记录
+            // 办理生成的任务记录
             taskService.complete(newTask.getId());
             return true;
         } catch (Exception e) {
@@ -681,31 +692,31 @@ public class ActTaskServiceImpl implements IActTaskService {
         try {
             String processInstanceId = task.getProcessInstanceId();
             ProcessInstance processInstance = QueryUtils.instanceQuery(task.getProcessInstanceId()).singleResult();
-            //获取并行网关执行后保留的执行实例数据
+            // 获取并行网关执行后保留的执行实例数据
             ExecutionChildByExecutionIdCmd childByExecutionIdCmd = new ExecutionChildByExecutionIdCmd(task.getExecutionId());
             List<ExecutionEntity> executionEntities = managementService.executeCommand(childByExecutionIdCmd);
-            //校验单据
+            // 校验单据
             BusinessStatusEnum.checkBackStatus(processInstance.getBusinessStatus());
-            //判断是否有多个任务
+            // 判断是否有多个任务
             List<Task> taskList = QueryUtils.taskQuery(processInstanceId).list();
             String backTaskDefinitionKey = backProcessBo.getTargetActivityId();
             taskService.addComment(task.getId(), processInstanceId, TaskStatusEnum.BACK.getStatus(), StringUtils.isNotBlank(backProcessBo.getMessage()) ? backProcessBo.getMessage() : "退回");
             if (taskList.size() > 1) {
-                //当前多个任务驳回到单个节点
+                // 当前多个任务驳回到单个节点
                 runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId).moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).distinct().collect(Collectors.toList()), backTaskDefinitionKey).changeState();
                 ActHiTaskinst actHiTaskinst = new ActHiTaskinst();
                 actHiTaskinst.setAssignee(userId);
                 actHiTaskinst.setId(task.getId());
-                actHiTaskinstMapper.updateById(actHiTaskinst);
+                actHiTaskinstMapper.update(actHiTaskinst);
             } else {
-                //当前单个节点驳回单个节点
+                // 当前单个节点驳回单个节点
                 runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId).moveActivityIdTo(task.getTaskDefinitionKey(), backTaskDefinitionKey).changeState();
             }
-            //删除并行环节未办理记录
+            // 删除并行环节未办理记录
             MultiInstanceVo multiInstance = WorkflowUtils.isMultiInstance(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
             if (multiInstance == null && taskList.size() > 1) {
                 List<Task> tasks = StreamUtils.filter(taskList, e -> !e.getTaskDefinitionKey().equals(task.getTaskDefinitionKey()));
-                actHiTaskinstMapper.deleteBatchIds(StreamUtils.toList(tasks, Task::getId));
+                actHiTaskinstMapper.deleteBatchByIds(StreamUtils.toList(tasks, Task::getId));
             }
 
 
@@ -716,10 +727,10 @@ public class ActTaskServiceImpl implements IActTaskService {
                     taskService.setAssignee(t.getId(), e.getAssignee());
                 });
             }
-            //发送消息
+            // 发送消息
             String message = "您的【" + processInstance.getName() + "】单据已经被驳回，请您注意查收。";
             sendMessage(list, processInstance.getName(), backProcessBo.getMessageType(), message);
-            //删除流程实例垃圾数据
+            // 删除流程实例垃圾数据
             for (ExecutionEntity executionEntity : executionEntities) {
                 DeleteExecutionCmd deleteExecutionCmd = new DeleteExecutionCmd(executionEntity.getId());
                 managementService.executeCommand(deleteExecutionCmd);
@@ -733,7 +744,7 @@ public class ActTaskServiceImpl implements IActTaskService {
                     processHandler.handleProcess(processInstance.getBusinessKey(), BusinessStatusEnum.BACK.getStatus(), false);
                 }
             }
-            //删除驳回后的流程节点
+            // 删除驳回后的流程节点
             wfTaskBackNodeService.deleteBackTaskNode(processInstanceId, backProcessBo.getTargetActivityId());
         } catch (Exception e) {
             throw new ServiceException(e.getMessage());

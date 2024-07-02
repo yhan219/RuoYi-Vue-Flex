@@ -378,7 +378,7 @@ public class ActProcessDefinitionServiceImpl implements IActProcessDefinitionSer
      * 初始化配置数据（demo使用，不用可删除）
      */
     private void initWfDefConfig() {
-        List<WfDefinitionConfig> wfDefinitionConfigs = wfDefinitionConfigMapper.selectList();
+        List<WfDefinitionConfig> wfDefinitionConfigs = wfDefinitionConfigMapper.selectAll();
         if (CollUtil.isEmpty(wfDefinitionConfigs)) {
             ProcessDefinition processDefinition = QueryUtils.definitionQuery().processDefinitionKey("leave1").latestVersion().singleResult();
             if (processDefinition != null) {

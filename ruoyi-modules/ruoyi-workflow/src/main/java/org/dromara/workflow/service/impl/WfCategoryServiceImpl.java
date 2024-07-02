@@ -1,10 +1,8 @@
 package org.dromara.workflow.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.MapstructUtils;
-import org.dromara.common.core.utils.StringUtils;
 import org.dromara.workflow.domain.WfCategory;
 import org.dromara.workflow.domain.bo.WfCategoryBo;
 import org.dromara.workflow.domain.vo.WfCategoryVo;
@@ -40,7 +38,7 @@ public class WfCategoryServiceImpl implements IWfCategoryService {
      */
     @Override
     public WfCategoryVo queryById(Long id) {
-        return baseMapper.selectVoById(id);
+        return baseMapper.selectOneByQueryAs(QueryWrapper.create().eq(WfCategory::getId, id), WfCategoryVo.class);
     }
 
 
@@ -49,14 +47,14 @@ public class WfCategoryServiceImpl implements IWfCategoryService {
      */
     @Override
     public List<WfCategoryVo> queryList(WfCategoryBo bo) {
-        LambdaQueryWrapper<WfCategory> lqw = buildQueryWrapper(bo);
-        return baseMapper.selectVoList(lqw);
+        QueryWrapper lqw = buildQueryWrapper(bo);
+        return baseMapper.selectListByQueryAs(lqw, WfCategoryVo.class);
     }
 
-    private LambdaQueryWrapper<WfCategory> buildQueryWrapper(WfCategoryBo bo) {
-        LambdaQueryWrapper<WfCategory> lqw = Wrappers.lambdaQuery();
-        lqw.like(StringUtils.isNotBlank(bo.getCategoryName()), WfCategory::getCategoryName, bo.getCategoryName());
-        lqw.eq(StringUtils.isNotBlank(bo.getCategoryCode()), WfCategory::getCategoryCode, bo.getCategoryCode());
+    private QueryWrapper buildQueryWrapper(WfCategoryBo bo) {
+        QueryWrapper lqw = QueryWrapper.create();
+        lqw.like(WfCategory::getCategoryName, bo.getCategoryName());
+        lqw.eq(WfCategory::getCategoryCode, bo.getCategoryCode());
         return lqw;
     }
 
@@ -82,7 +80,7 @@ public class WfCategoryServiceImpl implements IWfCategoryService {
     public Boolean updateByBo(WfCategoryBo bo) {
         WfCategory update = MapstructUtils.convert(bo, WfCategory.class);
         validEntityBeforeSave(update);
-        WfCategoryVo wfCategoryVo = baseMapper.selectVoById(bo.getId());
+        WfCategoryVo wfCategoryVo = baseMapper.selectOneByQueryAs(QueryWrapper.create().eq(WfCategory::getId, update.getId()), WfCategoryVo.class);
         List<ProcessDefinition> processDefinitionList = QueryUtils.definitionQuery().processDefinitionCategory(wfCategoryVo.getCategoryCode()).list();
         for (ProcessDefinition processDefinition : processDefinitionList) {
             repositoryService.setProcessDefinitionCategory(processDefinition.getId(), bo.getCategoryCode());
@@ -96,7 +94,7 @@ public class WfCategoryServiceImpl implements IWfCategoryService {
             model.setCategory(bo.getCategoryCode());
             repositoryService.saveModel(model);
         }
-        return baseMapper.updateById(update) > 0;
+        return baseMapper.update(update) > 0;
     }
 
     /**
@@ -114,7 +112,7 @@ public class WfCategoryServiceImpl implements IWfCategoryService {
         if (isValid) {
             //TODO 做一些业务上的校验,判断是否需要校验
         }
-        return baseMapper.deleteBatchIds(ids) > 0;
+        return baseMapper.deleteBatchByIds(ids) > 0;
     }
 
     /**
@@ -124,6 +122,6 @@ public class WfCategoryServiceImpl implements IWfCategoryService {
      */
     @Override
     public WfCategory queryByCategoryCode(String categoryCode) {
-        return baseMapper.selectOne(new LambdaQueryWrapper<WfCategory>().eq(WfCategory::getCategoryCode, categoryCode));
+        return baseMapper.selectOneByQuery(QueryWrapper.create().eq(WfCategory::getCategoryCode, categoryCode));
     }
 }

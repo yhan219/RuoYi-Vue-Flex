@@ -1,5 +1,6 @@
 package org.dromara.system.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -145,7 +146,7 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
     @Override
     public boolean checkDictDataUnique(SysDictDataBo dict) {
         Long dictCode = ObjectUtil.isNull(dict.getDictCode()) ? -1L : dict.getDictCode();
-        SysDictData entity = baseMapper.selectOne(new LambdaQueryWrapper<SysDictData>()
+        SysDictData entity = baseMapper.selectOneByQuery(QueryWrapper.create().from(SYS_DICT_DATA)
             .eq(SysDictData::getDictType, dict.getDictType()).eq(SysDictData::getDictValue, dict.getDictValue()));
         if (ObjectUtil.isNotNull(entity) && !dictCode.equals(entity.getDictCode())) {
             return false;

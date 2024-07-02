@@ -1,8 +1,8 @@
 package org.dromara.workflow.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import com.mybatisflex.core.query.QueryWrapper;
 import org.dromara.common.core.utils.MapstructUtils;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.workflow.domain.WfDefinitionConfig;
 import org.dromara.workflow.domain.bo.WfDefinitionConfigBo;
@@ -32,7 +32,7 @@ public class WfDefinitionConfigServiceImpl implements IWfDefinitionConfigService
      */
     @Override
     public WfDefinitionConfigVo getByDefId(String definitionId) {
-        return baseMapper.selectVoOne(new LambdaQueryWrapper<WfDefinitionConfig>().eq(WfDefinitionConfig::getDefinitionId, definitionId));
+        return baseMapper.selectOneByQueryAs(QueryWrapper.create().eq(WfDefinitionConfig::getDefinitionId, definitionId), WfDefinitionConfigVo.class);
     }
 
     /**
@@ -43,8 +43,8 @@ public class WfDefinitionConfigServiceImpl implements IWfDefinitionConfigService
      */
     @Override
     public WfDefinitionConfigVo getByTableNameLastVersion(String tableName) {
-        List<WfDefinitionConfigVo> wfDefinitionConfigVos = baseMapper.selectVoList(
-            new LambdaQueryWrapper<WfDefinitionConfig>().eq(WfDefinitionConfig::getTableName, tableName).orderByDesc(WfDefinitionConfig::getVersion));
+        List<WfDefinitionConfigVo> wfDefinitionConfigVos = baseMapper.selectListByQueryAs(
+            QueryWrapper.create().eq(WfDefinitionConfig::getTableName, tableName).orderBy(WfDefinitionConfig::getVersion,false), WfDefinitionConfigVo.class);
         if (CollUtil.isNotEmpty(wfDefinitionConfigVos)) {
             return wfDefinitionConfigVos.get(0);
         }
@@ -60,9 +60,9 @@ public class WfDefinitionConfigServiceImpl implements IWfDefinitionConfigService
      */
     @Override
     public WfDefinitionConfigVo getByDefIdAndTableName(String definitionId, String tableName) {
-        return baseMapper.selectVoOne(new LambdaQueryWrapper<WfDefinitionConfig>()
+        return baseMapper.selectOneByQueryAs(QueryWrapper.create()
             .eq(WfDefinitionConfig::getDefinitionId, definitionId)
-            .eq(WfDefinitionConfig::getTableName, tableName));
+            .eq(WfDefinitionConfig::getTableName, tableName), WfDefinitionConfigVo.class);
     }
 
     /**
@@ -73,9 +73,9 @@ public class WfDefinitionConfigServiceImpl implements IWfDefinitionConfigService
      */
     @Override
     public List<WfDefinitionConfigVo> getByTableNameNotDefId(String tableName, String definitionId) {
-        return baseMapper.selectVoList(new LambdaQueryWrapper<WfDefinitionConfig>()
+        return baseMapper.selectListByQueryAs(QueryWrapper.create()
             .eq(WfDefinitionConfig::getTableName, tableName)
-            .ne(WfDefinitionConfig::getDefinitionId, definitionId));
+            .ne(WfDefinitionConfig::getDefinitionId, definitionId), WfDefinitionConfigVo.class);
     }
 
     /**
@@ -83,7 +83,7 @@ public class WfDefinitionConfigServiceImpl implements IWfDefinitionConfigService
      */
     @Override
     public List<WfDefinitionConfigVo> queryList(List<String> definitionIds) {
-        return baseMapper.selectVoList(new LambdaQueryWrapper<WfDefinitionConfig>().in(WfDefinitionConfig::getDefinitionId, definitionIds));
+        return baseMapper.selectListByQueryAs(QueryWrapper.create().in(WfDefinitionConfig::getDefinitionId, definitionIds), WfDefinitionConfigVo.class);
     }
 
     /**
@@ -93,10 +93,10 @@ public class WfDefinitionConfigServiceImpl implements IWfDefinitionConfigService
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveOrUpdate(WfDefinitionConfigBo bo) {
         WfDefinitionConfig add = MapstructUtils.convert(bo, WfDefinitionConfig.class);
-        baseMapper.delete(new LambdaQueryWrapper<WfDefinitionConfig>().eq(WfDefinitionConfig::getTableName, bo.getTableName()));
+        baseMapper.deleteByQuery(QueryWrapper.create().eq(WfDefinitionConfig::getTableName, bo.getTableName()));
         add.setTableName(add.getTableName().toLowerCase());
-        boolean flag = baseMapper.insertOrUpdate(add);
-        if (baseMapper.insertOrUpdate(add)) {
+        boolean flag = baseMapper.insertOrUpdate(add) > 0;
+        if (baseMapper.insertOrUpdate(add) < 0) {
             bo.setId(add.getId());
         }
         return flag;
@@ -107,11 +107,11 @@ public class WfDefinitionConfigServiceImpl implements IWfDefinitionConfigService
      */
     @Override
     public Boolean deleteByIds(Collection<Long> ids) {
-        return baseMapper.deleteBatchIds(ids) > 0;
+        return baseMapper.deleteBatchByIds(ids) > 0;
     }
 
     @Override
     public Boolean deleteByDefIds(Collection<String> ids) {
-        return baseMapper.delete(new LambdaQueryWrapper<WfDefinitionConfig>().in(WfDefinitionConfig::getDefinitionId, ids)) > 0;
+        return baseMapper.deleteByQuery(QueryWrapper.create().in(WfDefinitionConfig::getDefinitionId, ids)) > 0;
     }
 }

@@ -1,9 +1,10 @@
 package org.dromara.workflow.domain;
 
-import org.dromara.common.mybatis.core.domain.BaseEntity;
-import com.baomidou.mybatisplus.annotation.*;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.dromara.common.mybatis.core.domain.BaseEntity;
 
 import java.io.Serial;
 
@@ -15,7 +16,7 @@ import java.io.Serial;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("wf_definition_config")
+@Table("wf_definition_config")
 public class WfDefinitionConfig extends BaseEntity {
 
     @Serial
@@ -24,7 +25,7 @@ public class WfDefinitionConfig extends BaseEntity {
     /**
      * 主键
      */
-    @TableId(value = "id")
+    @Id
     private Long id;
 
     /**

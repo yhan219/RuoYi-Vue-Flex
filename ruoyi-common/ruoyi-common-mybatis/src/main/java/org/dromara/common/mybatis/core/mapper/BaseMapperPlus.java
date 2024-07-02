@@ -213,30 +213,6 @@ public interface BaseMapperPlus<T> extends BaseMapper<T> {
         return this.selectObjectListByQuery(queryWrapper);
     }
 
-// todo
-    default V selectVoOne(Wrapper<T> wrapper, boolean throwEx) {
-        return selectVoOne(wrapper, this.currentVoClass(), throwEx);
-    }
-
-    /**
-     * 根据 entity 条件，查询一条记录
-     */
-    default <C> C selectVoOne(Wrapper<T> wrapper, Class<C> voClass) {
-        return selectVoOne(wrapper, voClass, true);
-    }
-
-    /**
-     * 根据 entity 条件，查询一条记录
-     */
-    default <C> C selectVoOne(Wrapper<T> wrapper, Class<C> voClass, boolean throwEx) {
-        T obj = this.selectOne(wrapper, throwEx);
-        if (ObjectUtil.isNull(obj)) {
-            return null;
-        }
-        return MapstructUtils.convert(obj, voClass);
-    }
-
-    // todo
 
     default <R> List<R> selectObjectListByQueryAs(QueryWrapper queryWrapper, Class<R> asType, DataColumn... columns) {
         DataPermission dataPermission = DataPermission.of(columns);

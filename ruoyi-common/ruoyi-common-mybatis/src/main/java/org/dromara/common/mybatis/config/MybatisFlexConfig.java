@@ -121,18 +121,6 @@ public class MybatisFlexConfig implements MyBatisFlexCustomizer {
         }
         return loginUser;
     }
-
-
-    //@Bean
-    //public PlusDataPermissionInterceptor plusDataPermissionInterceptor(PlusDataPermissionHandler plusDataPermissionHandler) {
-    //    return new PlusDataPermissionInterceptor(plusDataPermissionHandler);
-    //}
-
-
-    //@Bean
-    //public PageInterceptor pageInterceptor() {
-    //    return new PageInterceptor();
-    //}
-
+    
 
 }
