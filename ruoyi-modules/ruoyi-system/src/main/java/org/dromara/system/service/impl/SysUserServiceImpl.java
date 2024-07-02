@@ -37,6 +37,7 @@ import org.dromara.system.domain.vo.SysUserExportVo;
 import org.dromara.system.domain.vo.SysUserVo;
 import org.dromara.system.mapper.*;
 import org.dromara.system.service.ISysUserService;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -348,6 +349,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheNames.SYS_NICKNAME, key = "#user.userId")
     @Transactional(rollbackFor = Exception.class)
     public int updateUser(SysUserBo user) {
         // 新增用户与角色管理
@@ -398,6 +400,7 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
      * @param user 用户信息
      * @return 结果
      */
+    @CacheEvict(cacheNames = CacheNames.SYS_NICKNAME, key = "#user.userId")
     @Override
     public int updateUserProfile(SysUserBo user) {
         SysUser sysUser = UpdateEntity.of(SysUser.class, user.getUserId());
@@ -648,7 +651,10 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
         if (CollUtil.isEmpty(userIds)) {
             return List.of();
         }
-        List<SysUserVo> list = this.selectUserByIds(userIds, null);
+        List<SysUserVo> list = baseMapper.selectVoList(new LambdaQueryWrapper<SysUser>()
+            .select(SysUser::getUserId, SysUser::getUserName, SysUser::getNickName)
+            .eq(SysUser::getStatus, UserConstants.USER_NORMAL)
+            .in(CollUtil.isNotEmpty(userIds), SysUser::getUserId, userIds));
         return BeanUtil.copyToList(list, UserDTO.class);
     }
 
